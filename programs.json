@@ -1,37 +1,28 @@
 {
-  "_README": "Edit this file to manage CWRG employer forms. Each entry in `programs` becomes ONE static form page at docs/<collegeSlug>/<programSlug>/. After editing, run `node build.js` and commit. See _FIELDS below for what each key does.",
+  "_README": "Program-SPECIFIC config only. Each entry in `programs` becomes ONE static form page at docs/<collegeSlug>/<programSlug>/. Everything whose wording is the same across programs (intro copy, question labels/hints/types, notes, suggested-answer pools) lives in phrasings.json, which is shared by every form. After editing either file, run `node build.js` and commit the JSON + the regenerated docs/.",
 
   "_FIELDS": {
-    "collegeSlug / programSlug": "URL-safe folder names. Lowercase, hyphens only. Page URL = <site>/<collegeSlug>/<programSlug>/",
-    "college": "Full college/partner name shown to the employer (e.g. 'Vancouver Community College').",
-    "programTitle": "The skills-training course title. Baked in — employers do NOT answer this.",
-    "credential": "Credential / certification name. Baked in.",
-    "intro.goalHtml": "One or two sentences on what this form is for. Simple inline HTML allowed (<strong>, <em>, <br>).",
-    "roles": "List of candidate roles this program could fill. Shown as a checklist the employer ticks. Keep it short, realistic, not exhaustive.",
-    "questions": "The questions the employer actually answers, in the order they see them. Each has an id, type, label, optional hint, and optional `suggestions` (click-to-insert starter answers).",
-    "question.type": "'textarea' (long text), 'text' (short), 'number' (stepper), 'roles' (the role checklist), 'practicum' (yes/no + count + note). 'number' supports min/max/step/unit.",
-    "question.mapsTo": "Which part of the OFFICIAL BC form this answer fills — used only for the PDF. q1, q2a(roles)/q2b(count)/q2c(detail), q3, q4, q5a(count)/q5b(detail), q6(practicum), q7.",
-    "suggestions": "Click-to-insert starter answers that model what the FUNDER wants to see. Employers can insert then edit, or write their own. Keep them specific and in a real sector voice."
+    "collegeSlug / programSlug": "URL-safe folder names (lowercase, hyphens). Page URL = <site>/<collegeSlug>/<programSlug>/. Non-conforming values are auto-slugified with a warning.",
+    "college": "Full college/partner name shown to the employer. Fills {college} in the shared intro.",
+    "programTitle": "The skills-training course title. Baked into the PDF; fills {programTitle} in the shared intro. Employers do NOT answer this.",
+    "credential": "Credential / certification name. Baked into the PDF.",
+    "roles": "Candidate roles this program could fill — the only program-specific question content. Shown as the Q2 role+counter grid. Keep it short and realistic; employers can add their own roles too. Leave [] to let employers type all their own.",
+    "intro.goalHtml": "OPTIONAL per-program override of the shared intro goal text (phrasings.json intro.goalHtml). Usually omit and let the shared template fill {programTitle}/{college}.",
+    "where-wording-lives": "Question labels/hints/order, intro copy, the 'no hiring commitment' note, the footer, and all suggested/auto-generated answers are in phrasings.json (shared, program-neutral)."
   },
 
   "defaults": {
     "charityName": "TechMind Innovators",
-    "charityDescriptor": "a registered Canadian charity",
-    "notCommittedNote": "Completing this form does <strong>not</strong> commit your company to hiring anyone. It gives the Province of BC a picture of real employment needs in your sector — that's all. Please answer candidly.",
-    "footerNote": "This form runs entirely in your browser — nothing you enter is sent anywhere until you choose to share the PDF. When you finish, you download a completed PDF and email it back to the person who sent you this link.",
-    "returnInstruction": "Please email the completed PDF back to the person who sent you this link."
+    "charityDescriptor": "a registered Canadian charity"
   },
 
   "programs": [
     {
-      "collegeSlug": "vcc",
+      "collegeSlug": "sprott-shaw",
       "programSlug": "computer-aided-design-technology",
-      "college": "Vancouver Community College",
+      "college": "Sprott Shaw College",
       "programTitle": "Computer Aided Design Technology",
       "credential": "Computer Aided Design Technology Certificate",
-      "intro": {
-        "goalHtml": "This grant funds training only where there's a genuine, local shortage of skilled workers. Your answers help show the Province of BC that graduates of this program would have real jobs to step into in your community. Specific, honest answers make the strongest case."
-      },
       "roles": [
         "Estimator",
         "Project Coordinator",
@@ -39,112 +30,6 @@
         "Electrical Designer",
         "CAD Technician",
         "Drafter"
-      ],
-      "questions": [
-        {
-          "id": "communities",
-          "type": "textarea",
-          "label": "Which community or communities does your business operate in?",
-          "hint": "Name the actual cities or regions where your crews and offices work — not just your head office. Local, specific places make the strongest case.",
-          "mapsTo": "q1",
-          "suggestions": [
-            "We operate out of Surrey and the wider Metro Vancouver region, with most of our job sites spread across the Fraser Valley from Langley to Chilliwack.",
-            "Our shop is based in Prince George and we take on work throughout northern BC, including Vanderhoof, Fort St. James and several surrounding First Nations communities where we struggle to find local tradespeople.",
-            "Our office is in Port Coquitlam, and we also have employees working in Surrey, Burnaby, Richmond, Vancouver, Victoria and Nanaimo depending on where our worksites are located."
-          ]
-        },
-        {
-          "id": "rolesNeeded",
-          "type": "roles",
-          "label": "Which of these roles could graduates of this program fill at your company?",
-          "hint": "Tick any that apply. These are roles this credential prepares people for. You can add others in the comments at the end.",
-          "mapsTo": "q2a"
-        },
-        {
-          "id": "openingsNow",
-          "type": "number",
-          "label": "How many vacant positions do you have right now that these graduates could fill?",
-          "hint": "A real count matters most here — it's the clearest evidence of demand. Enter 0 if you have none open at the moment.",
-          "min": 0, "max": 50, "step": 1, "unit": "open positions",
-          "mapsTo": "q2b"
-        },
-        {
-          "id": "openingsDetail",
-          "type": "textarea",
-          "label": "Tell us about those current openings — position names, how long they've been open, locations.",
-          "hint": "Specific, named positions are the strongest evidence. Optional if you have none open right now.",
-          "optional": true,
-          "mapsTo": "q2c",
-          "suggestions": [
-            "We currently have 3 open Junior Designer positions and 2 CAD Technician roles that have sat unfilled for over two months. Graduates of this program would be qualified to step into all five.",
-            "Yes — 2 Estimator openings and 1 Project Coordinator role right now. A graduate could start in an entry role immediately and grow into the position with us."
-          ]
-        },
-        {
-          "id": "postings",
-          "type": "textarea",
-          "label": "Where do you regularly post these openings?",
-          "hint": "List the real channels you use — job boards, your website, recruiters, unions, schools. It helps to note if postings sit unfilled for lack of qualified applicants.",
-          "mapsTo": "q3",
-          "suggestions": [
-            "We post on the WorkBC Job Board, Indeed and our company website, and we've run the same postings on and off for the past three months with very few qualified applicants.",
-            "Mostly Indeed and word of mouth through our existing crew. We've also used a recruiter twice this year specifically because the standard job boards weren't producing qualified candidates."
-          ]
-        },
-        {
-          "id": "hardToFill",
-          "type": "textarea",
-          "label": "Have these positions been hard to fill in the past? If so, what made it hard?",
-          "hint": "This is the most important answer. Focus on the SKILLS or CREDENTIAL gap — that applicants lack the specific training or certification. (A shortage caused by pay or location is not what this training can fix, so keep the focus on skills.)",
-          "mapsTo": "q4",
-          "suggestions": [
-            "Yes, consistently. The applicants we get either have no hands-on experience or lack the specific CAD/design skills the role requires, so we spend months either leaving the seat empty or training from scratch. A pre-qualified cohort from this program would close exactly that gap.",
-            "Very hard. There's a real shortage of people in our area with foundational CAD and design skills — most applicants are self-taught with no recognized certificate, and we can't take the risk on fully unqualified hires. The result is overtime for existing staff and projects we've had to turn down."
-          ]
-        },
-        {
-          "id": "futureOpenings",
-          "type": "number",
-          "label": "How many openings do you anticipate for these roles over the next 6 to 12 months?",
-          "hint": "A forward estimate shows the need is lasting, not a one-off. Your best guess is fine.",
-          "min": 0, "max": 50, "step": 1, "unit": "anticipated openings",
-          "mapsTo": "q5a"
-        },
-        {
-          "id": "futureDetail",
-          "type": "textarea",
-          "label": "What's driving those future openings? (growth, new contracts, retirements, etc.)",
-          "hint": "A credible reason behind the number makes it stronger. Optional.",
-          "optional": true,
-          "mapsTo": "q5b",
-          "suggestions": [
-            "With two commercial contracts starting in the spring, we expect to open at least 4 more of these positions over the next 6 to 12 months, on top of our current vacancies.",
-            "We have two senior staff retiring within the year and steady growth in our service work, so I'd anticipate 3 to 5 additional openings in this role over the coming year."
-          ]
-        },
-        {
-          "id": "practicum",
-          "type": "practicum",
-          "label": "If a practicum is part of the training, could you host a student? If so, how many?",
-          "hint": "\"No\" is a perfectly fine, honest answer. If yes, a number plus any support you'd offer (mentorship, equipment) signals strong buy-in.",
-          "mapsTo": "q6",
-          "suggestions": [
-            "Yes, we can host 2 practicum students. We'd pair each with a senior staff member for on-site mentorship and cover the hands-on supervision and equipment for the placement.",
-            "Yes — we can offer 1 practicum placement in our office. We see the practicum as our main pipeline for hiring, so we're glad to provide real project work and supervision."
-          ]
-        },
-        {
-          "id": "comments",
-          "type": "textarea",
-          "label": "Anything else you'd like to add?",
-          "hint": "Optional. A sentence on the skills shortage in your sector, or your intent to interview graduates, reinforces that you're a real local partner.",
-          "optional": true,
-          "mapsTo": "q7",
-          "suggestions": [
-            "The skills shortage in our sector has been one of our biggest constraints on growth for the past two years. We fully support this training and would prioritize interviewing its graduates for our openings.",
-            "We've worked with graduates of similar programs before and the difference in job-readiness is significant. This training addresses a gap we can't solve through regular hiring, and we're glad to support the application."
-          ]
-        }
       ]
     }
   ]

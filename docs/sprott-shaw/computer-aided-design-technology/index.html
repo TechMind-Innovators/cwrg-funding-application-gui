@@ -1,199 +1,17 @@
-#!/usr/bin/env node
-/* ============================================================
-   CWRG Employer Form — static site generator
-   Reads programs.json and writes one self-contained page per
-   program to  docs/<collegeSlug>/<programSlug>/index.html
-
-   Usage:  node build.js
-   Then:   commit the docs/ folder and push (GitHub Pages serves /docs).
-
-   No external build dependencies — plain Node.
-   ============================================================ */
-
-const fs = require("fs");
-const path = require("path");
-
-const ROOT = __dirname;
-const CONFIG = path.join(ROOT, "programs.json");
-const OUT = path.join(ROOT, "docs");
-
-/* ---------- helpers ---------- */
-function slugOk(s) { return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s); }
-function esc(s) {
-  return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-}
-// allow a small, safe subset of inline HTML in intro/note copy
-function safeInline(s) {
-  if (s == null) return "";
-  // escape everything, then re-allow <strong> <em> <br>
-  let out = esc(s);
-  out = out.replace(/&lt;(\/?)(strong|em|br)\s*&gt;/g, "<$1$2>");
-  return out;
-}
-function rimraf(p) {
-  if (fs.existsSync(p)) fs.rmSync(p, { recursive: true, force: true });
-}
-
-/* ---------- load config ---------- */
-let raw;
-try {
-  raw = JSON.parse(fs.readFileSync(CONFIG, "utf8"));
-} catch (e) {
-  console.error("✗ Could not parse programs.json:", e.message);
-  process.exit(1);
-}
-const defaults = raw.defaults || {};
-const programs = Array.isArray(raw.programs) ? raw.programs : [];
-
-/* ---------- load shared, program-neutral content from phrasings.json ----------
-   Holds: intro (copy), notes (reassurance/footer), questions (neutral definitions),
-   and per-question auto-answer pools keyed by question id. */
-let sharedIntro = {}, sharedNotes = {}, sharedQuestions = [], phrasings = {};
-const PHRASINGS = path.join(ROOT, "phrasings.json");
-try {
-  if (fs.existsSync(PHRASINGS)) {
-    const pr = JSON.parse(fs.readFileSync(PHRASINGS, "utf8"));
-    sharedIntro = pr.intro || {};
-    sharedNotes = pr.notes || {};
-    sharedQuestions = Array.isArray(pr.questions) ? pr.questions : [];
-    Object.keys(pr).forEach(function (k) {
-      if (!k.startsWith("_") && k !== "intro" && k !== "notes" && k !== "questions") phrasings[k] = pr[k];
-    });
-  }
-} catch (e) {
-  console.error("✗ Could not parse phrasings.json:", e.message);
-  process.exit(1);
-}
-if (!sharedQuestions.length) {
-  console.error("✗ phrasings.json has no shared `questions` array.");
-  process.exit(1);
-}
-if (!programs.length) {
-  console.error("✗ No programs defined in programs.json");
-  process.exit(1);
-}
-
-/* ---------- validate ---------- */
-// turn "Sprott Shaw College" into "sprott-shaw-college"
-function slugify(s){
-  return String(s||"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-}
-const seen = new Set();
-let errors = 0;
-programs.forEach((p, i) => {
-  const where = `programs[${i}] (${p.programTitle || "untitled"})`;
-  ["collegeSlug", "programSlug", "college", "programTitle", "credential"].forEach(k => {
-    if (!p[k]) { console.error(`✗ ${where}: missing "${k}"`); errors++; }
-  });
-  // auto-normalize slugs that aren't already URL-safe, and warn (don't hard-fail)
-  ["collegeSlug", "programSlug"].forEach(k => {
-    if (p[k] && !slugOk(p[k])) {
-      const fixed = slugify(p[k]);
-      if (fixed) { console.warn(`  ! ${where}: ${k} "${p[k]}" normalized to "${fixed}"`); p[k] = fixed; }
-      else { console.error(`✗ ${where}: ${k} "${p[k]}" can't be turned into a URL slug`); errors++; }
-    }
-  });
-  const key = (p.collegeSlug || "") + "/" + (p.programSlug || "");
-  if (seen.has(key)) { console.error(`✗ ${where}: duplicate path "${key}"`); errors++; }
-  seen.add(key);
-  // questions come from shared phrasings.json; per-program `questions` is only optional overrides
-  if (p.questions !== undefined && !Array.isArray(p.questions)) { console.error(`✗ ${where}: optional "questions" must be an array of overrides`); errors++; }
-});
-if (errors) { console.error(`\n${errors} error(s) — nothing was written.`); process.exit(1); }
-
-/* ---------- render (invoked at the bottom, after templates are defined) ---------- */
-function build() {
-  rimraf(OUT);
-  fs.mkdirSync(OUT, { recursive: true });
-  // .nojekyll so GitHub Pages serves files/folders as-is
-  fs.writeFileSync(path.join(OUT, ".nojekyll"), "");
-
-  let written = 0;
-  programs.forEach(p => {
-    const html = renderPage(p, defaults);
-    const dir = path.join(OUT, p.collegeSlug, p.programSlug);
-    fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, "index.html"), html, "utf8");
-    console.log(`  ✓ ${p.collegeSlug}/${p.programSlug}/  —  ${p.college} · ${p.programTitle}`);
-    written++;
-  });
-  console.log(`\nDone. ${written} form page(s) written to docs/.`);
-  console.log("Next: commit the docs/ folder and push. GitHub Pages (serving /docs) will publish them.");
-}
-
-/* ============================================================
-   PAGE TEMPLATE
-   ============================================================ */
-function renderPage(p, d) {
-  const charityName = d.charityName || "TechMind Innovators";
-  const charityDescriptor = d.charityDescriptor || "a registered Canadian charity";
-  // fill {programTitle}/{college}/{charityName} placeholders in shared copy
-  const fill = (s) => String(s == null ? "" : s)
-    .replace(/\{programTitle\}/g, p.programTitle || "")
-    .replace(/\{college\}/g, p.college || "")
-    .replace(/\{charityName\}/g, charityName);
-  // questions: shared neutral definitions, with optional per-program override by id
-  const overrides = {};
-  (Array.isArray(p.questions) ? p.questions : []).forEach((q) => { if (q && q.id) overrides[q.id] = q; });
-  const questions = sharedQuestions.map((q) => Object.assign({}, q, overrides[q.id] || {}));
-
-  const intro = {
-    badge: sharedIntro.badge || "Interactive form",
-    heading: sharedIntro.heading || "",
-    builtByHtml: safeInline(fill(sharedIntro.builtByHtml || "")),
-    timeEstimate: sharedIntro.timeEstimate || "",
-    goalHtml: safeInline(fill((p.intro && p.intro.goalHtml) || sharedIntro.goalHtml || ""))
-  };
-
-  const data = {
-    college: p.college,
-    programTitle: p.programTitle,
-    credential: p.credential,
-    charityName: charityName,
-    charityDescriptor: charityDescriptor,
-    intro: intro,
-    notCommittedNote: safeInline(fill(sharedNotes.notCommittedNote || "")),
-    footerNote: safeInline(fill(sharedNotes.footerNote || "")),
-    returnInstruction: safeInline(fill(sharedNotes.returnInstruction || "")),
-    roles: Array.isArray(p.roles) ? p.roles : [],
-    questions: questions,
-    phrasings: phrasings
-  };
-  const CONFIG_JSON = JSON.stringify(data).replace(/</g, "\\u003c");
-
-  const title = `${data.programTitle} — Employer Form`;
-
-  return `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>${esc(title)}</title>
-<meta name="description" content="Employer support form for the ${esc(data.programTitle)} program — a collaboration between ${esc(data.charityName)} and ${esc(data.college)}.">
+<title>Computer Aided Design Technology — Employer Form</title>
+<meta name="description" content="Employer support form for the Computer Aided Design Technology program — a collaboration between TechMind Innovators and Sprott Shaw College.">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-${STYLES}
-</style>
-</head>
-<body>
-${BODY_HTML}
-<script id="program-config" type="application/json">${CONFIG_JSON}</script>
-<script>
-${APP_JS}
-</script>
-</body>
-</html>
-`;
-}
 
-/* ---------- STYLES (shared across all pages) ---------- */
-const STYLES = String.raw`
   :root {
     --bc-blue: #234075; --bc-gold: #e3a82b;
     --ink: #1a1a1a; --muted: #5b6472;
@@ -399,10 +217,11 @@ const STYLES = String.raw`
   .footnote { text-align: center; color: var(--muted); font-size: .78rem; margin-top: 24px; }
   .field.invalid input, .field.invalid textarea { border-color: var(--bad); }
   @media (prefers-reduced-motion: reduce){ * { animation-duration: .001ms !important; transition-duration: .001ms !important; } }
-`;
 
-/* ---------- BODY (static shell; fields injected by JS) ---------- */
-const BODY_HTML = String.raw`
+</style>
+</head>
+<body>
+
 <div class="topbar">
   <div class="topbar-inner">
     <div class="crest" aria-hidden="true">
@@ -432,10 +251,10 @@ const BODY_HTML = String.raw`
     </div>
   </div>
 </div>
-`;
 
-/* ---------- APP JS (runs on each page, reads #program-config) ---------- */
-const APP_JS = String.raw`
+<script id="program-config" type="application/json">{"college":"Sprott Shaw College","programTitle":"Computer Aided Design Technology","credential":"Computer Aided Design Technology Certificate","charityName":"TechMind Innovators","charityDescriptor":"a registered Canadian charity","intro":{"badge":"Interactive form","heading":"A quicker way to share your input","builtByHtml":"This is an interactive form built by \u003cstrong>TechMind Innovators\u003c/strong> to make answering as easy as possible — most questions draft an answer for you that you can tweak or replace.","timeEstimate":"About 5 minutes","goalHtml":"We&#39;re working to bring grant-funded \u003cstrong>Computer Aided Design Technology\u003c/strong> training to your community, in partnership with \u003cstrong>Sprott Shaw College\u003c/strong>. Your perspective helps the Province of BC see where these skills are needed most, so local people can train for careers in your industry and businesses like yours gain job-ready talent close to home. A few minutes of your insight can help build that talent pipeline."},"notCommittedNote":"Completing this form does \u003cstrong>not\u003c/strong> commit your company to hiring anyone. It gives the Province of BC a picture of real employment needs in your sector — that&#39;s all. Please answer candidly.","footerNote":"This form runs entirely in your browser — nothing you enter is sent anywhere until you choose to share the PDF. When you finish, you download a completed PDF and email it back to the person who sent you this link.","returnInstruction":"Please email the completed PDF back to the person who sent you this link.","roles":["Estimator","Project Coordinator","BIM Designer","Electrical Designer","CAD Technician","Drafter"],"questions":[{"id":"communities","type":"textarea","label":"Which community or communities does your business operate in?","hint":"Name the actual cities or regions where your crews and offices work — not just your head office. Local, specific places make the strongest case.","mapsTo":"q1"},{"id":"roleDemand","type":"rolegrid","label":"Do you currently have vacant positions that graduates of this program could fill? Set how many of each role.","hint":"Set a number beside each role you currently have open that graduates could fill. Think broadly too — roles people could grow into, or skills you wish your current team had, are worth noting. Add your own roles in the blank rows. If you have no current vacancies, tick \"No vacancies right now\" and we'll note your future interest instead.","mapsTo":"q2"},{"id":"postings","type":"sourcegrid","label":"Where do you regularly post these openings?","hint":"Tick the places you use, or add your own. We'll draft your answer below — you can edit it.","mapsTo":"q3"},{"id":"hardToFill","type":"textarea","label":"Have these positions been hard to fill in the past? If so, what made it hard?","hint":"What's made it hard to find the right people? The suggested answers below are a good starting point — pick the closest one and tweak it.","mapsTo":"q4"},{"id":"futureOpenings","type":"countanswer","label":"Do you foresee future openings in these positions over the next 6 to 12 months? If so, how many?","hint":"Set your best estimate of anticipated openings. A forward number shows the need is lasting, not a one-off. If you can't put a figure on it yet, tick \"No specific number yet\" and we'll note your future interest.","min":0,"max":50,"step":1,"unit":"anticipated openings","mapsTo":"q5"},{"id":"practicum","type":"practicum","label":"If a practicum were part of the training, could you host a student? If so, how many?","hint":"This one is purely hypothetical — this program does not actually include a placement, so you're not committing to anything. It just asks whether, in principle, you'd be open to hosting. \"No\" is a perfectly fine answer; either way we'll draft a response you can edit.","mapsTo":"q6"},{"id":"comments","type":"textarea","label":"Anything else you'd like to add?","hint":"Optional. A sentence on the skills shortage in your sector, or your intent to interview graduates, reinforces that you're a real local partner.","optional":true,"mapsTo":"q7"}],"phrasings":{"roleDemand":{"question":"Which roles could graduates of this program fill, and how many of each? (Official Q2: Do you currently have vacant positions that successful graduates of this training would be qualified to fill? Please list the names of the position(s) and how many openings.)","slot":"{roles}","positive":["Yes. We currently have openings that graduates of this training would be well qualified to fill: {roles}.","Yes — we have active vacancies that these graduates could step into, specifically {roles}.","We do have current openings well suited to graduates of this program: {roles}.","Yes. Right now we're looking to fill {roles}, and graduates of this training would be strong candidates.","We have immediate needs that this training maps directly onto: {roles}.","Yes, there are positions open with us today that graduates could fill — {roles}.","We currently have room for {roles}, and this credential is exactly the preparation we look for.","Yes. Graduates would be qualified for several roles we're hiring for now: {roles}.","We have live openings that fit this training well: {roles}.","Yes — our current vacancies include {roles}, all of which graduates of this program could take on.","At the moment we're actively trying to fill {roles}, and this is the kind of training that would prepare someone to do that work.","Yes, we have real demand right now for {roles}, and graduates of this program would be a natural fit.","We currently have openings for {roles} that we'd be glad to see qualified local graduates apply to.","Yes. These are roles we need filled today and that graduates could move into: {roles}.","We have present-day vacancies that align with this training: {roles}.","Yes — we could use {roles} right now, and this credential covers the core skills for those roles.","Our current hiring needs include {roles}, which graduates of this program would be equipped to fill.","Yes. There is genuine demand in our shop today for {roles}, and this training speaks directly to it.","We're currently short on {roles}, and graduates of this program would help us close that gap.","Yes, we have openings now for {roles} — exactly the kind of work this training prepares people for.","We have immediate openings for {roles}, and we'd welcome applications from graduates of this program.","Yes. The roles we most need filled right now — {roles} — line up closely with what this training delivers.","We currently have positions available for {roles} that graduates of this credential could fill.","Yes — there's real, present demand with us for {roles}, and this program builds exactly those skills."],"negative":["We don't have vacancies open at this exact moment, but roles like these are a regular part of our hiring, and we'd welcome qualified local graduates as our needs grow.","No immediate openings today, though this is the kind of talent we return to the market for often — graduates of this program would be on our radar as we grow.","Nothing open right now, but the skills this training builds are ones we consistently need, and we expect to be hiring for them again before long.","We're fully staffed at the moment, but we see steady demand for these skills in our sector and would be glad to consider graduates as positions come up.","No current vacancies, but we anticipate needing this kind of talent as our workload grows, and a local pipeline of graduates would be genuinely valuable to us.","Not right now — but roles like these turn over and expand for us over time, and we'd happily look at graduates of this program when they do.","We have no openings today, though we view this training as building exactly the skills our industry will keep needing, including here.","No vacancies at the moment, but we're optimistic about growth, and graduates with this credential are the kind of people we'd want to hire when we expand.","Nothing open presently, but we'd keep graduates of this program in mind — these are skills that come up regularly in our hiring.","We're not hiring for this today, but the training targets a real and recurring need in our sector, and we'd welcome local graduates down the line.","No current openings, though we expect that to change as projects ramp up — and this is precisely the skill set we'd be recruiting for.","Not at this moment, but we see this training filling a gap our industry feels broadly, and we'd be glad to consider its graduates in future.","We don't have a vacancy open today, but we hire for these skills periodically and would value a stronger local pool of qualified graduates.","No immediate need, but we're growing, and roles drawing on this training are the kind we expect to open as we do.","Nothing available right now, but the demand for these skills in our region is real, and we'd support graduates finding their footing here.","We're set for now, though we anticipate future openings in this area and would welcome graduates of this program when they arise.","No vacancies currently, but this training reflects where our sector is heading, and we'd be happy to consider graduates as our needs develop.","Not hiring for this today, but these are skills we keep coming back to, and a reliable stream of local graduates would help us plan ahead.","We have no openings at present, but we'd gladly keep in touch — graduates with this credential are exactly who we look for when roles open.","No current vacancies, but we believe in where this training is going and expect it will match real openings with us as we grow.","Nothing open just now, but we'd encourage graduates to reach out — our hiring in this area tends to come in waves, and skilled people are always welcome.","We're not recruiting for this right now, but the need is real in our industry, and we'd happily consider program graduates as future opportunities come up.","No immediate positions, though we see clear long-term demand for these skills and would value graduates joining our local talent pool.","Not at this time, but we're confident this kind of training meets a lasting need in our sector, and we'd be glad to look at its graduates as we expand."]},"postings":{"question":"Where do you regularly post your openings? (Official Q3: Where do you regularly post positions for your openings?)","slot":"{sources}","sources":["Indeed","WorkBC Job Board","our company website / careers page","LinkedIn","recruiters or staffing agencies","word of mouth and employee referrals","trade or union job boards","local colleges and training schools","social media (Facebook, Instagram)","industry associations and networks"],"templates":["We regularly post our openings on {sources}.","We advertise these positions through {sources}.","Our openings typically go out on {sources}.","We recruit for these roles mainly through {sources}.","We post positions on {sources}, and we often find qualified candidates are hard to come by.","Our hiring for these roles runs through {sources}.","We use {sources} to get our openings in front of candidates.","Openings like these are posted on {sources}.","We rely on {sources} to fill these positions.","We share our openings across {sources}.","We advertise on {sources}, though the right candidates can still be slow to come forward.","We generally post on {sources} when these roles open up.","Our usual channels for these positions are {sources}.","We put these openings out through {sources}.","We recruit through {sources}, and we've found strong local candidates in short supply.","When we're hiring for these roles we post on {sources}.","We cast a wide net using {sources}.","We list these positions on {sources}.","We promote our openings via {sources}.","We handle recruitment for these roles through {sources}.","We post on {sources}, and often re-run the same ads when qualified applicants don't come through.","Our openings reach candidates through {sources}."]},"hardToFill":{"question":"Have these positions been hard to fill in the past? If so, what made it hard? (Official Q4: Have you had a hard time filling these positions in the past? If yes, please describe the challenges you faced.) Strong answers point to a SKILLS/CREDENTIAL gap, not pay or location.","pool":["Yes, consistently. The applicants we get either have no hands-on experience or lack the specific skills and certification the role requires, so we spend months either leaving the seat empty or training from scratch. A pre-qualified cohort from this program would close exactly that gap.","Very hard. There's a real shortage of people in our area with the foundational skills this work needs — most applicants are self-taught with no recognized credential, and we can't take the risk on fully unqualified hires.","Yes. The biggest obstacle is finding candidates who already have the technical training; we get plenty of applications, but few come with the specific skills the job demands.","It's been a persistent challenge. Qualified people with this exact skill set are rare in our region, so roles stay open far longer than we'd like.","Yes — the problem isn't interest, it's readiness. Applicants often need months of training before they can contribute, and we don't always have the capacity to train from the ground up.","We struggle to find people who hold the right certification. Without a local training pipeline, we're competing for a very small pool of already-qualified workers.","Definitely. Most candidates we see lack the hands-on, job-ready skills this role requires, and we've had to turn down work because we couldn't staff it.","Yes. The gap is specifically in formal training — we meet plenty of willing people, but very few with the recognized credential and practical skills we need.","Filling these roles has been slow and difficult. The skills are specialized, the qualified candidate pool is thin, and we often end up leaning on overtime from existing staff.","Yes, repeatedly. We've left positions open for months because applicants don't have the certification or the practical experience the work requires.","It's a real bottleneck. There simply aren't enough trained people locally, so we either wait a long time or invest heavily in training someone up ourselves.","Yes. The candidates who apply typically need significant upskilling before they're productive, which stretches our team and delays projects.","We've found it very hard. The specific technical skills for this role aren't common in our area, and demand for them across the sector makes competition fierce.","Yes — we consistently see a shortage of applicants with the right credential. General experience is easy to find; this particular skill set is not.","Hard, yes. The main issue is that training for this work isn't widely available locally, so the supply of qualified candidates hasn't kept up with our need.","Yes. We've had openings sit unfilled because the applicants lacked the formal training, and bringing someone fully up to speed in-house takes time we often don't have.","It's been an ongoing struggle. Without a steady stream of trained graduates, we're left choosing between long vacancies and costly from-scratch training.","Yes. The skills gap is real — applicants are enthusiastic but under-trained, and the recognized credential this program offers is exactly what's missing.","We've had real difficulty. The specialized nature of the role means most applicants don't meet the technical bar, and the qualified few are quickly snapped up.","Yes, very much so. Our region doesn't produce enough people with this training, so we frequently reopen the same postings without finding the right fit.","Hard to fill, yes. The core problem is a lack of candidates with the specific hands-on competencies the job needs, not a lack of applicants overall.","Yes. We've relied on recruiters and still struggled, because the underlying issue is a shortage of people with the actual skills this training provides.","It's been genuinely difficult. The work requires a particular technical foundation that few local applicants have, and building it in-house is slow and expensive.","Yes. We often get applicants who are a near-miss — right attitude, wrong skill set — and a program that delivers the exact credential would change that for us.","Very hard. The talent shortage in this area is well known in our industry, and we feel it directly every time one of these roles opens up.","Yes. Finding someone job-ready has meant long searches, and more than once we've had to scale back work because the right skills weren't available locally.","It's been a consistent pain point. The specific training required isn't common, so qualified candidates are scarce and in high demand.","Yes. Most applicants need substantial training before they can do the work independently, which puts real strain on our experienced staff.","Hard, and getting harder. As demand in our sector grows, the small pool of properly trained people gets stretched thinner.","Yes. The challenge has always been the skills gap — plenty of people want the work, but few arrive with the certification and practical ability it takes.","We've found these roles very hard to staff. A local program turning out job-ready graduates would directly solve a problem we've wrestled with for years.","Yes. Repeated searches, long vacancies, and heavy reliance on training new hires from scratch — all because qualified, credentialed candidates are so hard to find here."]},"futureOpenings":{"question":"How many openings do you anticipate for these roles over the next 6 to 12 months? (Official Q5: Do you foresee future openings in these positions? If yes, how many job openings do you anticipate over the next 6 to 12 months?) {n} is the number the employer enters; show the number itself in the sentence. Count shown only when >1 where it reads naturally.","slot":"{n}","positive":["Yes. We anticipate around {n} openings in these roles over the next 6 to 12 months.","Yes — we expect roughly {n} additional openings for these positions in the coming 6 to 12 months.","We foresee about {n} openings over the next 6 to 12 months as our workload grows.","Yes. Over the next 6 to 12 months we'd estimate {n} further openings in these roles.","We expect to open approximately {n} of these positions within the next year.","Yes — our best estimate is {n} openings in these roles over the next 6 to 12 months.","We anticipate {n} or so openings for these positions in the coming months as we continue to grow.","Yes. Looking ahead 6 to 12 months, we expect around {n} openings in these roles.","We foresee roughly {n} additional positions opening over the next year.","Yes — we'd anticipate about {n} openings in these roles over the next 6 to 12 months, on top of our current needs.","We expect demand for these skills to continue, with an estimated {n} openings in the next 6 to 12 months.","Yes. Based on our pipeline, we anticipate around {n} openings in these positions over the coming year.","We'd estimate {n} further openings for these roles over the next 6 to 12 months.","Yes — as projects ramp up, we expect approximately {n} more openings in these positions within the year.","We anticipate about {n} openings over the next 6 to 12 months, and likely more beyond that.","Yes. Our forecast points to roughly {n} openings in these roles over the next 6 to 12 months.","We expect around {n} additional openings for these positions as our business grows this year.","Yes — realistically we'd expect {n} openings in these roles over the next 6 to 12 months.","We see steady demand ahead and anticipate about {n} openings in these positions within the year.","Yes. We'd put the number at around {n} openings over the next 6 to 12 months."],"negative":["We don't anticipate specific openings in the next 6 to 12 months, but these skills remain central to our work and we expect to be hiring for them again before long.","No firm openings forecast for the coming 6 to 12 months, though we see ongoing demand for these skills and would welcome qualified graduates as our needs develop.","We can't point to a specific number yet, but roles like these turn over and expand for us over time, and we expect future opportunities.","No additional openings projected right now, but we're optimistic about growth and anticipate needing these skills down the line.","We don't have a forecast number for the next year, but the demand for these skills in our sector is steady and we expect to hire again as we grow.","Nothing firmly projected for the coming months, though we'd expect openings to arise as projects and workload pick up.","No specific future openings to report yet, but these are skills we return to regularly, and a local pool of graduates would be valuable as our needs evolve.","We're not forecasting set numbers for the next 6 to 12 months, but we anticipate continued demand and would welcome qualified graduates when roles open.","No concrete projection at this stage, but given where our sector is heading we expect openings in these roles before long.","We can't commit to a number for the coming year, but we see these skills staying in demand and expect to be recruiting for them in future."]},"practicum":{"question":"If a practicum were part of the training, could you host a student? If so, how many? (Official Q6: As a part of training, if a practicum was required, are you providing a practicum space? If so, how many placements?) NOTE: this is purely hypothetical — the program does NOT include a placement — so answers are about willingness, not a commitment. 'positive' uses {n} = number of placements (count shown only when >1 where natural). 'negative' answers are an honest 'not right now' that still reads supportive and real.","slot":"{n}","positive":["Yes, in principle we could host {n}. We'd see a practicum as a great way to give students real experience and get to know potential future hires.","We'd be open to hosting {n}. Hands-on placements are exactly how people learn this work, and we'd be glad to help.","Yes — we could likely make room for {n}, subject to the usual approvals. We think practical experience is invaluable for new entrants.","In principle, yes, around {n}. We'd want to give students meaningful project work rather than just observation.","We'd happily consider {n}. Mentoring newcomers is something our team genuinely enjoys and values.","Yes, we could probably accommodate {n} if the timing worked. A practicum is a natural pipeline into the roles we hire for.","We'd be willing to take {n}. Real worksite experience makes a big difference in how job-ready graduates are.","Yes — potentially {n}, pending management sign-off. We see placements as an investment in the local talent pool.","We could look at hosting {n}. Pairing a student with an experienced team member is how we'd approach it.","In theory, yes, {n}. We'd treat it as a two-way opportunity — experience for them, a look at fresh talent for us.","We'd be glad to host {n}. Giving people a first real foothold in the industry matters to us.","Yes, {n} would be realistic for us. We'd make sure they got proper supervision and genuine work to do.","We'd consider {n}, workload permitting. A practicum is often where we spot people we'd want to hire.","Potentially {n}. We believe strongly in hands-on training and would want to support it where we can.","Yes — we could offer {n} and provide the mentorship and equipment to make it worthwhile.","We'd aim to host {n} if we could. Practical placements are how this trade has always passed on its skills.","In principle {n}, and we'd want to make it a real learning experience, not just job-shadowing.","Yes, {n} sounds doable for us. Supporting the next generation of skilled workers is something we care about.","We'd be open to {n}, subject to approval. We've seen first-hand how much placements accelerate someone's readiness.","We could likely host {n}. We'd see it as giving back to the local industry we rely on.","Yes — around {n}. We'd pair each student with a senior staff member so they get proper guidance.","We'd welcome {n} if the opportunity arose. Real experience on live projects is the best teacher in our field.","In theory we could take {n}, and we'd be glad to — it's exactly the kind of community support we believe in.","Yes, {n} is something we could work toward. We'd want to make sure the experience genuinely helps them grow.","We'd consider hosting {n}, and we'd treat it seriously — meaningful tasks, real feedback, proper supervision.","Potentially {n}, depending on project load. We think practicums are one of the best ways into this industry.","Yes — we could make space for {n} and would see it as part of building a stronger local workforce.","We'd be happy to explore {n}. Giving students a real taste of the work benefits everyone in the long run.","In principle, {n}. We'd want them learning from our most experienced people and leaving genuinely more employable.","Yes, {n} feels realistic. We'd approach it as a proper mentorship, not just a box to tick.","We could host {n} if asked. Practical placements are how we'd most like to support training like this.","We'd aim for {n}, and we'd make the experience count — real responsibilities and the support to handle them."],"negative":["Not at the moment, but we think practicums are a great idea and would want to revisit it as our capacity allows.","We're not set up to host a placement right now, but we'd genuinely like to in the future — hands-on experience is so valuable.","Not currently, though we'd be glad to consider it down the road. We really value this kind of practical training.","We can't offer a placement at this time, but we fully support the idea and hope to be in a position to help later.","Not right now — our team is stretched — but we think placements are exactly what new entrants need and we'd like to contribute eventually.","We're unable to host just now, but we'd welcome the chance as things settle. Real experience makes all the difference.","Not at present, but this is something we'd love to do once we have the capacity to mentor properly.","We can't commit to a space currently, though we strongly believe in work-integrated learning and would revisit it.","Not this time, but we'd keep the door open — supporting students into the trade is something we care about.","We're not able to right now, but we think it's a worthwhile idea and would consider it in future intakes.","Not currently, but we'd genuinely like to help with placements once our workload allows.","We can't host at the moment, but we see the value clearly and hope to take part when we're able.","Not right now, though we'd happily look at it later — giving people real experience is how this industry grows.","We're not in a position to this time, but we'd encourage it and would love to be involved down the line.","Not at this stage, but we think practicums are important and would aim to offer one in the future.","We can't just now, but we'd welcome a conversation about it later — we really do see the benefit.","Not currently, but we admire the idea and would like to support placements once we have the bandwidth.","We're unable to host at present, though we'd be keen to as soon as our capacity allows.","Not this intake, but we'd genuinely like to help with hands-on training in the future.","We can't offer a space right now, but we fully back the concept and hope to contribute before long.","Not at the moment, but supporting new talent through placements is something we'd want to do when we can.","We're not able to this time around, but we think it's a great initiative and would revisit it gladly."]},"comments":{"question":"Anything else you'd like to add? (Official Q7: Do you wish to add any further comments?) Optional. Strong answers reinforce that this is a real local skills shortage the training would address, and that the employer is a genuine, invested community partner. Positive and aligned with what CWRG wants to hear.","pool":["The skills shortage in our sector has been one of our biggest constraints on growth, and training like this is exactly what's needed to address it locally.","We fully support this application. A steady supply of qualified local graduates would make a real difference to businesses like ours.","We've seen first-hand how hard it is to find people with these specific skills, and a dedicated training program would directly help close that gap.","This training targets a genuine need in our industry. We'd gladly prioritize interviewing its graduates for our openings.","Programs like this are how our sector sustains itself. We're glad to see local training that produces job-ready people.","We believe strongly in building talent close to home, and this training would strengthen the whole local workforce, not just our own hiring.","The lack of trained candidates has held our region back, and we see this program as a practical, much-needed response to that.","We'd welcome graduates of this program and are happy to support it in any way we can. The need is real and ongoing.","Training like this keeps skilled work in our community rather than forcing employers to look elsewhere. We're fully behind it.","We've had to turn down work for lack of qualified staff, so a local pipeline of trained graduates would have a direct, positive impact.","This is exactly the kind of initiative our industry needs. We're pleased to lend our support to the application.","A credentialed, job-ready cohort would be a genuine asset to employers across our sector, and we're glad to see it being developed here.","We see this training as an investment in the long-term health of our local economy, and we support it wholeheartedly.","The demand for these skills isn't going away, and homegrown training is the most sustainable way to meet it. We're happy to help.","We'd be glad to stay involved as this program develops — whether through hiring, mentorship, or feedback on what employers need.","This kind of training makes our region a more attractive place to do business, and we're pleased to support it.","We strongly endorse this application. Local, practical, credential-based training is precisely what our sector has been missing.","Graduates of programs like this tend to be noticeably more job-ready, and that readiness is exactly what we struggle to find.","We appreciate efforts to build local skills capacity and would welcome the chance to hire from this program's graduates.","The gap between the skills we need and the candidates available is real, and this training is a direct, sensible way to narrow it.","We're glad to support training that keeps opportunity and talent within our own communities.","This program addresses a shortage we feel every time we try to hire, and we'd be pleased to see it succeed.","We'd happily serve as a reference for the value of this training — the need for it in our sector is clear and pressing.","Supporting this application was an easy decision. A stronger local talent pool benefits everyone in our industry.","We see real, lasting demand for these skills, and locally delivered training is the best way to meet it. We're fully supportive.","Initiatives like this help smaller employers compete for talent, and we're grateful to see investment in local skills.","We back this program and would encourage its graduates to apply with us. The industry genuinely needs more trained people.","This training reflects exactly where our sector is heading, and we're glad the region is building capacity to keep up.","We'd welcome a continued relationship with this program — the alignment between what it teaches and what we need is strong.","The practical focus of this training is what sets it apart, and it's precisely that hands-on readiness our workplaces require.","We fully support this effort to grow local skills, and we believe it will pay off for employers, graduates, and the community alike.","This is a worthwhile and timely initiative. We're pleased to support it and look forward to the talent it will produce."]}}}</script>
+<script>
+
 (function () {
   "use strict";
   var CFG = JSON.parse(document.getElementById("program-config").textContent);
@@ -1532,7 +1351,7 @@ const APP_JS = String.raw`
     el("statusMsg").textContent = "Downloaded. " + (CFG.returnInstruction || "Please email the PDF back to the sender.");
   }
 })();
-`;
 
-/* ---------- run ---------- */
-build();
+</script>
+</body>
+</html>
