@@ -1,0 +1,918 @@
+#!/usr/bin/env node
+/* ============================================================
+   CWRG Employer Form — static site generator
+   Reads programs.json and writes one self-contained page per
+   program to  docs/<collegeSlug>/<programSlug>/index.html
+
+   Usage:  node build.js
+   Then:   commit the docs/ folder and push (GitHub Pages serves /docs).
+
+   No external build dependencies — plain Node.
+   ============================================================ */
+
+const fs = require("fs");
+const path = require("path");
+
+const ROOT = __dirname;
+const CONFIG = path.join(ROOT, "programs.json");
+const OUT = path.join(ROOT, "docs");
+
+/* ---------- helpers ---------- */
+function slugOk(s) { return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s); }
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+// allow a small, safe subset of inline HTML in intro/note copy
+function safeInline(s) {
+  if (s == null) return "";
+  // escape everything, then re-allow <strong> <em> <br>
+  let out = esc(s);
+  out = out.replace(/&lt;(\/?)(strong|em|br)\s*&gt;/g, "<$1$2>");
+  return out;
+}
+function rimraf(p) {
+  if (fs.existsSync(p)) fs.rmSync(p, { recursive: true, force: true });
+}
+
+/* ---------- load config ---------- */
+let raw;
+try {
+  raw = JSON.parse(fs.readFileSync(CONFIG, "utf8"));
+} catch (e) {
+  console.error("✗ Could not parse programs.json:", e.message);
+  process.exit(1);
+}
+const defaults = raw.defaults || {};
+const programs = Array.isArray(raw.programs) ? raw.programs : [];
+if (!programs.length) {
+  console.error("✗ No programs defined in programs.json");
+  process.exit(1);
+}
+
+/* ---------- validate ---------- */
+const seen = new Set();
+let errors = 0;
+programs.forEach((p, i) => {
+  const where = `programs[${i}] (${p.programTitle || "untitled"})`;
+  ["collegeSlug", "programSlug", "college", "programTitle", "credential"].forEach(k => {
+    if (!p[k]) { console.error(`✗ ${where}: missing "${k}"`); errors++; }
+  });
+  if (p.collegeSlug && !slugOk(p.collegeSlug)) { console.error(`✗ ${where}: collegeSlug "${p.collegeSlug}" must be lowercase-with-hyphens`); errors++; }
+  if (p.programSlug && !slugOk(p.programSlug)) { console.error(`✗ ${where}: programSlug "${p.programSlug}" must be lowercase-with-hyphens`); errors++; }
+  const key = (p.collegeSlug || "") + "/" + (p.programSlug || "");
+  if (seen.has(key)) { console.error(`✗ ${where}: duplicate path "${key}"`); errors++; }
+  seen.add(key);
+  if (!Array.isArray(p.questions) || !p.questions.length) { console.error(`✗ ${where}: needs at least one question`); errors++; }
+});
+if (errors) { console.error(`\n${errors} error(s) — nothing was written.`); process.exit(1); }
+
+/* ---------- render (invoked at the bottom, after templates are defined) ---------- */
+function build() {
+  rimraf(OUT);
+  fs.mkdirSync(OUT, { recursive: true });
+  // .nojekyll so GitHub Pages serves files/folders as-is
+  fs.writeFileSync(path.join(OUT, ".nojekyll"), "");
+
+  let written = 0;
+  programs.forEach(p => {
+    const html = renderPage(p, defaults);
+    const dir = path.join(OUT, p.collegeSlug, p.programSlug);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "index.html"), html, "utf8");
+    console.log(`  ✓ ${p.collegeSlug}/${p.programSlug}/  —  ${p.college} · ${p.programTitle}`);
+    written++;
+  });
+  console.log(`\nDone. ${written} form page(s) written to docs/.`);
+  console.log("Next: commit the docs/ folder and push. GitHub Pages (serving /docs) will publish them.");
+}
+
+/* ============================================================
+   PAGE TEMPLATE
+   ============================================================ */
+function renderPage(p, d) {
+  const data = {
+    college: p.college,
+    programTitle: p.programTitle,
+    credential: p.credential,
+    charityName: d.charityName || "TechMind Innovators",
+    charityDescriptor: d.charityDescriptor || "a registered Canadian charity",
+    goalHtml: safeInline((p.intro && p.intro.goalHtml) || ""),
+    notCommittedNote: safeInline(d.notCommittedNote || ""),
+    footerNote: safeInline(d.footerNote || ""),
+    returnInstruction: safeInline(d.returnInstruction || ""),
+    roles: Array.isArray(p.roles) ? p.roles : [],
+    questions: p.questions
+  };
+  const CONFIG_JSON = JSON.stringify(data).replace(/</g, "\\u003c");
+
+  const title = `${data.programTitle} — Employer Form`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>${esc(title)}</title>
+<meta name="description" content="Employer support form for the ${esc(data.programTitle)} program — a collaboration between ${esc(data.charityName)} and ${esc(data.college)}.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+${STYLES}
+</style>
+</head>
+<body>
+${BODY_HTML}
+<script id="program-config" type="application/json">${CONFIG_JSON}</script>
+<script>
+${APP_JS}
+</script>
+</body>
+</html>
+`;
+}
+
+/* ---------- STYLES (shared across all pages) ---------- */
+const STYLES = String.raw`
+  :root {
+    --bc-blue: #234075; --bc-gold: #e3a82b;
+    --ink: #1a1a1a; --muted: #5b6472;
+    --line: #d4d9e0; --line-strong: #9aa3b0;
+    --bg: #f4f6f9; --card: #ffffff;
+    --subtle: #fafbfc; --subtle-2: #f7f9fc;
+    --note-bg: #f0f4fb; --note-border: #d7e1f2; --note-ink: #2b3a57;
+    --header-ink: #ffffff;
+    --good: #1f8a4c; --good-bg: #ecf8f0;
+    --warn: #b4690e; --warn-bg: #fdf3e6;
+    --bad: #b42318; --bad-bg: #fdeceb;
+    --accent: #234075; --accent-ink: #2d508f; --focus: rgba(35,64,117,.14);
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.04);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --ink:#e8ecf2; --muted:#9aa5b5; --line:#313a47; --line-strong:#4a5564;
+    --bg:#11151b; --card:#1a202a; --subtle:#1f2630; --subtle-2:#202834;
+    --note-bg:#1b2534; --note-border:#2b3c54; --note-ink:#bcd0ee;
+    --good:#4cc47d; --good-bg:#16281d; --warn:#e0a243; --warn-bg:#2a2114;
+    --bad:#f0786b; --bad-bg:#2c1817;
+    --accent:#7ea2dd; --accent-ink:#9bb8e8; --focus:rgba(126,162,221,.24);
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }}
+  :root[data-theme="dark"]{
+    --ink:#e8ecf2; --muted:#9aa5b5; --line:#313a47; --line-strong:#4a5564;
+    --bg:#11151b; --card:#1a202a; --subtle:#1f2630; --subtle-2:#202834;
+    --note-bg:#1b2534; --note-border:#2b3c54; --note-ink:#bcd0ee;
+    --good:#4cc47d; --good-bg:#16281d; --warn:#e0a243; --warn-bg:#2a2114;
+    --bad:#f0786b; --bad-bg:#2c1817;
+    --accent:#7ea2dd; --accent-ink:#9bb8e8; --focus:rgba(126,162,221,.24);
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    color: var(--ink); background: var(--bg); line-height: 1.5; font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+  img { max-width: 100%; }
+
+  .topbar { background: var(--bc-blue); color: var(--header-ink); border-bottom: 4px solid var(--bc-gold); }
+  .topbar-inner { max-width: 760px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+  .crest { width: 40px; height: 40px; flex: none; border-radius: 6px; background: #fff; display: grid; place-items: center; }
+  .crest svg { width: 32px; height: 32px; display: block; }
+  .topbar h1 { font-size: 1rem; margin: 0; font-weight: 600; letter-spacing: .2px; }
+  .topbar p { margin: 2px 0 0; font-size: .8rem; opacity: .88; }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 22px 20px 180px; }
+
+  .intro { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow); margin-bottom: 20px; }
+  .intro h2 { margin: 0 0 6px; font-size: 1.12rem; text-wrap: balance; }
+  .collab { font-size: .9rem; color: var(--muted); margin: 0 0 12px; }
+  .collab strong { color: var(--accent-ink); }
+  .intro .goal { margin: 0 0 14px; font-size: .95rem; }
+  .note { border-radius: 8px; padding: 12px 15px; font-size: .9rem; margin-top: 4px; }
+  .note.reassure { background: var(--good-bg); border: 1px solid var(--good); color: var(--ink); }
+  .note.reassure .pill { display:inline-block; font-weight:700; color: var(--good); font-size:.76rem; letter-spacing:.04em; text-transform:uppercase; margin-bottom:4px; }
+
+  .baked { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 14px 0 0; padding: 12px 15px; background: var(--subtle-2); border: 1px solid var(--line); border-radius: 8px; font-size: .88rem; }
+  .baked dt { color: var(--muted); font-weight: 500; }
+  .baked dd { margin: 0; font-weight: 600; }
+
+  .progress-wrap { margin-top: 18px; }
+  .progress-label { font-size: .8rem; color: var(--muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .progress-track { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: var(--bc-blue); border-radius: 99px; transition: width .3s ease; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .progress-fill { background: var(--accent); } }
+  :root[data-theme="dark"] .progress-fill { background: var(--accent); }
+
+  .section { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 18px; overflow: hidden; }
+  .section-head { padding: 13px 20px; border-bottom: 1px solid var(--line); background: var(--subtle); }
+  .section-head h3 { margin: 0; font-size: .98rem; color: var(--accent-ink); }
+  .section-body { padding: 18px 20px; }
+
+  .field { margin-bottom: 20px; }
+  .field:last-child { margin-bottom: 0; }
+  label.q { display: block; font-weight: 600; font-size: .95rem; margin-bottom: 3px; }
+  label.q .num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--bc-blue); color: #fff; font-size: .76rem; font-weight: 700; margin-right: 8px; vertical-align: middle; }
+  .req { color: var(--bad); font-weight: 700; }
+  .opt { color: var(--muted); font-weight: 500; font-size: .82rem; }
+  .hint { font-size: .85rem; color: var(--muted); margin: 2px 0 9px; }
+
+  input[type=text], input[type=email], input[type=tel], input[type=date], textarea {
+    width: 100%; font: inherit; font-size: .95rem; padding: 10px 12px;
+    border: 1.5px solid var(--line-strong); border-radius: 8px; background: var(--card); color: var(--ink);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
+  input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus); }
+  textarea { resize: vertical; min-height: 84px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 520px){ .row2 { grid-template-columns: 1fr; } }
+
+  /* suggestions */
+  .suggests { margin-top: 9px; display: flex; flex-direction: column; gap: 7px; }
+  .suggests-label { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  .suggest { text-align: left; font: inherit; font-size: .86rem; line-height: 1.45; color: var(--ink);
+    background: var(--subtle-2); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px 9px 34px; cursor: pointer; position: relative; transition: border-color .15s, background .15s; }
+  .suggest:hover { border-color: var(--accent); }
+  .suggest::before { content: "+"; position: absolute; left: 12px; top: 8px; font-weight: 700; color: var(--accent-ink); font-size: 1rem; line-height: 1.2; }
+  .suggest .cap { display:block; font-size:.72rem; color: var(--muted); margin-top: 3px; }
+
+  /* roles checklist */
+  .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 520px){ .roles { grid-template-columns: 1fr; } }
+  .role { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border: 1.5px solid var(--line-strong); border-radius: 8px; cursor: pointer; font-size: .9rem; transition: border-color .15s, background .15s; }
+  .role:hover { border-color: var(--accent); }
+  .role input { width: 17px; height: 17px; accent-color: var(--bc-blue); flex: none; }
+  .role.checked { border-color: var(--accent); background: var(--note-bg); }
+
+  /* number stepper */
+  .stepper { display: inline-flex; align-items: center; border: 1.5px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+  .stepper button { font: inherit; font-size: 1.1rem; width: 42px; height: 42px; border: none; background: var(--subtle); color: var(--ink); cursor: pointer; }
+  .stepper button:hover { background: var(--line); }
+  .stepper input { width: 64px; text-align: center; border: none; border-left: 1.5px solid var(--line-strong); border-right: 1.5px solid var(--line-strong); border-radius: 0; font-size: 1rem; -moz-appearance: textfield; }
+  .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .stepper-unit { margin-left: 10px; color: var(--muted); font-size: .9rem; }
+
+  /* practicum (radio yes/no + conditional) */
+  .yesno { display: flex; gap: 10px; margin-bottom: 10px; }
+  .yesno label { flex: 1; text-align: center; padding: 9px; border: 1.5px solid var(--line-strong); border-radius: 8px; cursor: pointer; font-size: .9rem; font-weight: 500; }
+  .yesno input { position: absolute; opacity: 0; pointer-events: none; }
+  .yesno label.sel { border-color: var(--accent); background: var(--note-bg); color: var(--accent-ink); font-weight: 600; }
+  .yesno label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .feedback { font-size: .82rem; margin-top: 7px; min-height: 1em; display: flex; gap: 6px; align-items: flex-start; }
+  .feedback.good { color: var(--good); } .feedback.warn { color: var(--warn); } .feedback.bad { color: var(--bad); }
+  .feedback svg { flex: none; margin-top: 2px; }
+
+  .certify { display: flex; gap: 10px; align-items: flex-start; background: var(--subtle-2); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; font-size: .9rem; }
+  .certify input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--bc-blue); }
+
+  .actionbar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line); box-shadow: 0 -4px 20px rgba(16,24,40,.08); z-index: 50; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .actionbar-inner { max-width: 760px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .status-msg { font-size: .85rem; color: var(--muted); min-width: 0; flex: 1 1 140px; }
+  .status-msg.done { color: var(--good); font-weight: 500; }
+  .btns { display: flex; gap: 10px; flex: 0 0 auto; }
+  @media (max-width: 420px){
+    .actionbar-inner { padding: 10px 16px; }
+    .btns { flex: 1 1 100%; }
+    .btns button { flex: 1; }
+    button.primary, button.ghost { padding: 11px 12px; }
+  }
+  button.primary, button.ghost { font: inherit; font-weight: 600; font-size: .92rem; padding: 11px 18px; border-radius: 8px; cursor: pointer; border: 1.5px solid transparent; }
+  button.primary { background: var(--bc-blue); color: #fff; }
+  button.primary:hover { background: #1b3460; }
+  /* muted until the form is complete; still clickable so it can guide the user to what's missing */
+  button.primary[aria-disabled="true"] { opacity: .5; }
+  button.primary.is-ready { opacity: 1; }
+  button.ghost { background: var(--card); color: var(--accent-ink); border-color: var(--line-strong); }
+  button.ghost:hover { background: var(--subtle); }
+
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .footnote { text-align: center; color: var(--muted); font-size: .78rem; margin-top: 24px; }
+  .field.invalid input, .field.invalid textarea { border-color: var(--bad); }
+  @media (prefers-reduced-motion: reduce){ * { animation-duration: .001ms !important; transition-duration: .001ms !important; } }
+`;
+
+/* ---------- BODY (static shell; fields injected by JS) ---------- */
+const BODY_HTML = String.raw`
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="crest" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="18" r="8" fill="#e3a82b"/>
+        <path d="M4 38 L18 22 L28 32 L38 20 L44 38 Z" fill="#234075"/>
+        <rect x="2" y="37" width="44" height="4" fill="#234075"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Community Workforce Response Grant</h1>
+      <p id="topSub">Employer Support Form</p>
+    </div>
+  </div>
+</div>
+<div class="wrap">
+  <div class="intro" id="intro"><!-- filled by JS --></div>
+  <form id="form"><!-- filled by JS --></form>
+  <p class="footnote" id="footnote"></p>
+</div>
+<div class="actionbar">
+  <div class="actionbar-inner">
+    <div class="status-msg" id="statusMsg"></div>
+    <div class="btns">
+      <button type="button" class="ghost" id="resetBtn">Clear</button>
+      <button type="button" class="primary" id="downloadBtn" aria-disabled="true">Download completed PDF</button>
+    </div>
+  </div>
+</div>
+`;
+
+/* ---------- APP JS (runs on each page, reads #program-config) ---------- */
+const APP_JS = String.raw`
+(function () {
+  "use strict";
+  var CFG = JSON.parse(document.getElementById("program-config").textContent);
+  var STORAGE_KEY = "cwrg_" + location.pathname;
+
+  var ICON = {
+    good: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    warn: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L15 14H1L8 1.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.6" r=".9" fill="currentColor"/></svg>'
+  };
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+  function el(id){ return document.getElementById(id); }
+  function words(s){ return (s.trim().match(/\S+/g)||[]).length; }
+
+  /* ---- top subtitle ---- */
+  el("topSub").textContent = CFG.programTitle + " · " + CFG.college;
+
+  /* ---- intro ---- */
+  el("intro").innerHTML =
+    '<h2>Thanks for supporting this training program</h2>' +
+    '<p class="collab">A collaboration between <strong>' + esc(CFG.charityName) + '</strong> (' + esc(CFG.charityDescriptor) + ') and <strong>' + esc(CFG.college) + '</strong>.</p>' +
+    (CFG.goalHtml ? '<p class="goal">' + CFG.goalHtml + '</p>' : '') +
+    '<div class="note reassure"><span class="pill">No hiring commitment</span><div>' + CFG.notCommittedNote + '</div></div>' +
+    '<dl class="baked">' +
+      '<dt>Program</dt><dd>' + esc(CFG.programTitle) + '</dd>' +
+      '<dt>Credential</dt><dd>' + esc(CFG.credential) + '</dd>' +
+      '<dt>In partnership with</dt><dd>' + esc(CFG.college) + '</dd>' +
+    '</dl>' +
+    '<div class="progress-wrap"><div class="progress-label"><span>Your progress</span><span id="progressPct">0%</span></div>' +
+    '<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div></div>';
+
+  el("footnote").innerHTML = CFG.footerNote;
+
+  /* ---- build fields ---- */
+  var form = el("form");
+  var sec = document.createElement("div"); sec.className = "section";
+  sec.innerHTML = '<div class="section-head"><h3>A few questions about your employment needs</h3></div>';
+  var body = document.createElement("div"); body.className = "section-body";
+  sec.appendChild(body); form.appendChild(sec);
+
+  var qIndex = 0;
+  CFG.questions.forEach(function(q){
+    qIndex++;
+    var f = document.createElement("div");
+    f.className = "field"; f.dataset.qid = q.id; f.dataset.type = q.type;
+    if (q.optional) f.dataset.optional = "1";
+
+    var optLabel = q.optional ? ' <span class="opt">(optional)</span>' : ' <span class="req">*</span>';
+    var head = '<label class="q" for="' + q.id + '"><span class="num">' + qIndex + '</span>' + esc(q.label) + optLabel + '</label>' +
+               (q.hint ? '<div class="hint">' + esc(q.hint) + '</div>' : '');
+
+    var control = "";
+    if (q.type === "textarea") {
+      control = '<textarea id="' + q.id + '" rows="3"></textarea>';
+    } else if (q.type === "text") {
+      control = '<input type="text" id="' + q.id + '">';
+    } else if (q.type === "number") {
+      control = numberControl(q);
+    } else if (q.type === "roles") {
+      control = rolesControl(q);
+    } else if (q.type === "practicum") {
+      control = practicumControl(q);
+    }
+
+    var suggests = "";
+    if (q.suggestions && q.suggestions.length) {
+      suggests = '<div class="suggests"><div class="suggests-label">Suggested answers — click to use, then edit</div>';
+      q.suggestions.forEach(function(s, i){
+        suggests += '<button type="button" class="suggest" data-target="' + q.id + '" data-text="' + esc(s) + '">' + esc(s) + '</button>';
+      });
+      suggests += '</div>';
+    }
+
+    f.innerHTML = head + control + suggests + '<div class="feedback"></div>';
+    body.appendChild(f);
+  });
+
+  /* ---- certification ---- */
+  var cert = document.createElement("div"); cert.className = "field";
+  cert.innerHTML = '<div class="certify"><input type="checkbox" id="certify"><label for="certify" style="font-weight:500;cursor:pointer;">' +
+    'I certify that I am authorized to submit this form on behalf of the organization named below, and that the information is correct to the best of my knowledge. <span class="req">*</span></label></div>';
+  body.appendChild(cert);
+
+  /* ---- business/contact section ---- */
+  var cSec = document.createElement("div"); cSec.className = "section";
+  cSec.innerHTML = '<div class="section-head"><h3>Your business &amp; contact details</h3></div>' +
+    '<div class="section-body">' +
+      field2("businessName", "Business name", "organization", "e.g. Ozz Electric Ltd.") +
+      '<div class="field" data-contact="1" data-min="5"><label class="q" for="businessAddress">Business address and/or website <span class="req">*</span></label>' +
+        '<div class="hint">A full address is best; a website alone is fine if you prefer.</div>' +
+        '<input type="text" id="businessAddress" placeholder="e.g. 101 – 1680 Broadway St, Port Coquitlam, BC · www.example.com"><div class="feedback"></div></div>' +
+      '<div class="row2">' +
+        '<div class="field" data-contact="1"><label class="q" for="formDate">Date <span class="req">*</span></label><input type="date" id="formDate"><div class="feedback"></div></div>' +
+        field2("repName", "Representative name & title", "name", "e.g. Cara Ramage – HR Manager", 4) +
+      '</div>' +
+      '<div class="row2">' +
+        '<div class="field" data-contact="1" data-kind="email"><label class="q" for="repEmail">Representative email <span class="req">*</span></label><input type="email" id="repEmail" placeholder="name@company.com"><div class="feedback"></div></div>' +
+        '<div class="field" data-contact="1" data-kind="tel"><label class="q" for="repPhone">Representative phone <span class="req">*</span></label><input type="tel" id="repPhone" placeholder="604-555-1234"><div class="feedback"></div></div>' +
+      '</div>' +
+    '</div>';
+  form.appendChild(cSec);
+
+  function field2(id, label, ac, ph, min) {
+    return '<div class="field" data-contact="1"' + (min?' data-min="'+min+'"':'') + '>' +
+      '<label class="q" for="' + id + '">' + esc(label) + ' <span class="req">*</span></label>' +
+      '<input type="text" id="' + id + '" autocomplete="' + ac + '" placeholder="' + esc(ph) + '"><div class="feedback"></div></div>';
+  }
+  function numberControl(q){
+    var min = q.min!=null?q.min:0, max = q.max!=null?q.max:99, step = q.step||1;
+    return '<div class="stepper" data-min="'+min+'" data-max="'+max+'" data-step="'+step+'">' +
+      '<button type="button" data-step-dir="-1" aria-label="decrease">−</button>' +
+      '<input type="text" inputmode="numeric" id="'+q.id+'" value="0">' +
+      '<button type="button" data-step-dir="1" aria-label="increase">+</button>' +
+      '</div>' + (q.unit?'<span class="stepper-unit">'+esc(q.unit)+'</span>':'');
+  }
+  function rolesControl(q){
+    var out = '<div class="roles" id="'+q.id+'" data-roles="1">';
+    (CFG.roles||[]).forEach(function(r, i){
+      out += '<label class="role"><input type="checkbox" value="'+esc(r)+'"><span>'+esc(r)+'</span></label>';
+    });
+    out += '</div>';
+    return out;
+  }
+  function practicumControl(q){
+    return '<div data-practicum="1" id="'+q.id+'">' +
+      '<div class="yesno">' +
+        '<label data-val="yes"><input type="radio" name="'+q.id+'_yn" value="yes">Yes, we could host</label>' +
+        '<label data-val="no"><input type="radio" name="'+q.id+'_yn" value="no">No, not at this time</label>' +
+      '</div>' +
+      '<div class="practicum-detail" hidden>' +
+        '<div class="stepper" data-min="1" data-max="20" data-step="1" style="margin-bottom:8px">' +
+          '<button type="button" data-step-dir="-1" aria-label="decrease">−</button>' +
+          '<input type="text" inputmode="numeric" id="'+q.id+'_count" value="1">' +
+          '<button type="button" data-step-dir="1" aria-label="increase">+</button>' +
+        '</div><span class="stepper-unit">placement(s)</span>' +
+        '<textarea id="'+q.id+'_note" rows="2" placeholder="Any condition? e.g. subject to head-office approval" style="margin-top:8px"></textarea>' +
+      '</div></div>';
+  }
+
+  /* default date */
+  el("formDate").value = new Date().toISOString().slice(0,10);
+
+  /* ================= interactions ================= */
+  var touched = {};  // tracks which number/roles/practicum questions the employer has engaged
+
+  // suggestions — insert when empty; if the field already has text, ask before replacing
+  document.querySelectorAll(".suggest").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var t = el(btn.dataset.target);
+      var existing = (t.value||"").trim();
+      if (existing && existing !== btn.dataset.text) {
+        if (!window.confirm("Replace what you've written with this example? You can edit it afterwards.")) return;
+      }
+      t.value = btn.dataset.text;
+      t.dispatchEvent(new Event("input", {bubbles:true}));
+      t.focus();
+      // place caret at end so they can keep typing
+      try { t.setSelectionRange(t.value.length, t.value.length); } catch(e){}
+    });
+  });
+  // steppers — clamp on every input (not just blur), mark touched on any interaction
+  document.querySelectorAll(".stepper").forEach(function(st){
+    var input = st.querySelector("input");
+    var min = +st.dataset.min, max = +st.dataset.max, step = +st.dataset.step;
+    var qid = input.id.replace(/_count$/, "");
+    function clamp(v){ v = parseInt(v,10); if(isNaN(v)) v=min; return Math.max(min, Math.min(max, v)); }
+    st.querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click", function(){ touched[qid]=true; input.value = clamp((+input.value||0) + step*(+b.dataset.stepDir)); input.dispatchEvent(new Event("input",{bubbles:true})); });
+    });
+    input.addEventListener("input", function(){ touched[qid]=true; recompute(); });
+    input.addEventListener("blur", function(){ input.value = clamp(input.value); recompute(); });
+    input.addEventListener("keydown", function(e){
+      if (e.key === "ArrowUp"){ e.preventDefault(); touched[qid]=true; input.value = clamp((+input.value||0)+step); input.dispatchEvent(new Event("input",{bubbles:true})); }
+      if (e.key === "ArrowDown"){ e.preventDefault(); touched[qid]=true; input.value = clamp((+input.value||0)-step); input.dispatchEvent(new Event("input",{bubbles:true})); }
+    });
+  });
+  // roles
+  document.querySelectorAll(".role input").forEach(function(cb){
+    cb.addEventListener("change", function(){
+      var holder = cb.closest("[data-roles]");
+      touched[holder.id] = true;
+      cb.closest(".role").classList.toggle("checked", cb.checked);
+      validateRoles(holder.id); recompute();
+    });
+  });
+  // practicum yes/no
+  document.querySelectorAll("[data-practicum]").forEach(function(pr){
+    var detail = pr.querySelector(".practicum-detail");
+    pr.querySelectorAll(".yesno input").forEach(function(r){
+      r.addEventListener("change", function(){
+        touched[pr.id] = true;
+        pr.querySelectorAll(".yesno label").forEach(function(l){ l.classList.toggle("sel", l.dataset.val === r.value); });
+        detail.hidden = (r.value !== "yes");
+        validatePracticum(pr.id); recompute();
+      });
+    });
+    detail.querySelector("textarea").addEventListener("input", recompute);
+  });
+
+  /* ---- validation + progress ---- */
+  var contactFields = [].slice.call(document.querySelectorAll('[data-contact="1"]'));
+  contactFields.forEach(function(f){
+    var input = f.querySelector("input");
+    input.addEventListener("input", function(){ validateContact(f); recompute(); });
+    input.addEventListener("blur", function(){ validateContact(f); });
+  });
+  el("certify").addEventListener("change", recompute);
+  CFG.questions.forEach(function(q){
+    if (q.type === "textarea" || q.type === "text") {
+      el(q.id).addEventListener("input", function(){ validateQ(q); recompute(); });
+      el(q.id).addEventListener("blur", function(){ validateQ(q); });
+    }
+  });
+
+  function setFb(fb, kind, msg){ fb.className = "feedback" + (kind?" "+kind:""); fb.innerHTML = msg ? ((ICON[kind]||"")+"<span>"+esc(msg)+"</span>") : ""; }
+
+  function validateContact(f){
+    var input = f.querySelector("input"), fb = f.querySelector(".feedback"), v = input.value.trim();
+    if (!v){ setFb(fb,"",""); return false; }
+    if (f.dataset.kind === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ setFb(fb,"warn","That doesn't look like a complete email."); return false; }
+    if (f.dataset.kind === "tel" && v.replace(/\D/g,"").length < 10){ setFb(fb,"warn","Please include a full 10-digit phone number."); return true; }
+    var min = +(f.dataset.min||0);
+    if (min && v.length < min){ setFb(fb,"warn","A little more detail helps."); return true; }
+    setFb(fb,"good","Looks good."); return true;
+  }
+  function validateQ(q){
+    var input = el(q.id), f = input.closest(".field"), fb = f.querySelector(".feedback"), v = input.value.trim();
+    if (q.optional){ setFb(fb, v?"good":"", v?"Thanks for the detail.":""); return true; }
+    if (!v){ setFb(fb,"",""); return false; }
+    if (words(v) < 4 || v.length < 18){ setFb(fb,"warn","Try to be a bit more specific — it makes a stronger case."); return true; }
+    setFb(fb,"good","Great — clear and specific."); return true;
+  }
+  function fieldFb(id){ var f = el(id).closest(".field"); return f ? f.querySelector(".feedback") : null; }
+  function validateRoles(id){
+    var fb = fieldFb(id); if(!fb) return;
+    var n = document.querySelectorAll('#'+id+' input:checked').length;
+    if (!touched[id] && n===0){ setFb(fb,"",""); return; }
+    if (n===0) setFb(fb,"warn","Pick at least one role (or add one in the comments at the end).");
+    else setFb(fb,"good", n + " role" + (n===1?"":"s") + " selected.");
+  }
+  function validatePracticum(id){
+    var fb = fieldFb(id); if(!fb) return;
+    var r = document.querySelector('input[name="'+id+'_yn"]:checked');
+    if (!touched[id] && !r){ setFb(fb,"",""); return; }
+    if (!r) setFb(fb,"warn","Please choose Yes or No.");
+    else setFb(fb,"good","Thanks.");
+  }
+  function validateNumber(q){
+    var fb = fieldFb(q.id); if(!fb) return;
+    if (!touched[q.id]){ setFb(fb,"",""); return; }
+    setFb(fb,"good","Got it.");
+  }
+
+  function isQuestionFilled(q){
+    if (q.optional) return true;
+    if (q.type === "textarea" || q.type === "text") return !!el(q.id).value.trim();
+    if (q.type === "number") return !!touched[q.id];            // must be deliberately set (0 is valid, but only once touched)
+    if (q.type === "roles") return document.querySelectorAll('#'+q.id+' input:checked').length > 0;
+    if (q.type === "practicum") { var r = document.querySelector('input[name="'+q.id+'_yn"]:checked'); return !!r; }
+    return true;
+  }
+
+  var formComplete = false;
+  // return the DOM element of the first incomplete required field, or null
+  function firstIncomplete(){
+    for (var i=0;i<CFG.questions.length;i++){ var q = CFG.questions[i];
+      if (!q.optional && !isQuestionFilled(q)) return el(q.id).closest(".field");
+    }
+    for (var j=0;j<contactFields.length;j++){ if (!contactFields[j].querySelector("input").value.trim()) return contactFields[j]; }
+    if (!el("certify").checked) return el("certify").closest(".field");
+    return null;
+  }
+  function recompute(){
+    var req = [], done = 0;
+    CFG.questions.forEach(function(q){ if(!q.optional){ req.push(q); if(isQuestionFilled(q)) done++; } });
+    var total = req.length + contactFields.length + 1; // +certify
+    contactFields.forEach(function(f){ if (f.querySelector("input").value.trim()) done++; });
+    if (el("certify").checked) done++;
+
+    var pct = Math.round(done/total*100);
+    el("progressFill").style.width = pct + "%";
+    el("progressPct").textContent = pct + "%";
+    formComplete = done >= total;
+    // keep the button clickable so an incomplete click can guide the user; show state via class + aria
+    el("downloadBtn").classList.toggle("is-ready", formComplete);
+    el("downloadBtn").setAttribute("aria-disabled", formComplete ? "false" : "true");
+    var left = total - done;
+    el("statusMsg").className = "status-msg" + (formComplete?" done":"");
+    el("statusMsg").textContent = formComplete ? "All set — download your completed PDF." : (left + " required field" + (left===1?"":"s") + " left.");
+    saveDraft();
+  }
+
+  /* ---- draft autosave ---- */
+  function saveDraft(){
+    try {
+      var d = { v:{}, roles:{}, radios:{} };
+      form.querySelectorAll("input, textarea").forEach(function(e){
+        if (e.type === "checkbox"){ if (e.id==="certify") d.v.certify = e.checked; else if (e.closest(".roles")) d.roles[e.value] = e.checked; }
+        else if (e.type === "radio"){ if (e.checked) d.radios[e.name] = e.value; }
+        else if (e.id) d.v[e.id] = e.value;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+    } catch(e){}
+  }
+  function loadDraft(){
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY); if(!raw) return;
+      var d = JSON.parse(raw);
+      Object.keys(d.v||{}).forEach(function(id){ if(id==="certify"){ el("certify").checked=!!d.v.certify; return;} var e=el(id); if(e) e.value=d.v[id]; });
+      // restore roles and mark the roles question touched if any was saved
+      document.querySelectorAll(".role input").forEach(function(cb){
+        if(d.roles && d.roles[cb.value]){ cb.checked=true; cb.closest(".role").classList.add("checked"); var h=cb.closest("[data-roles]"); if(h) touched[h.id]=true; }
+      });
+      // restore radios (practicum) and re-fire change so the conditional UI re-applies
+      Object.keys(d.radios||{}).forEach(function(name){
+        var r=document.querySelector('input[name="'+name+'"][value="'+d.radios[name]+'"]');
+        if(r){ r.checked=true; r.dispatchEvent(new Event("change",{bubbles:true})); }
+      });
+      // a restored number value means it was deliberately set before — mark touched
+      CFG.questions.forEach(function(q){ if(q.type==="number" && d.v && d.v[q.id]!=null && d.v[q.id]!=="") touched[q.id]=true; });
+    } catch(e){}
+  }
+  loadDraft();
+  contactFields.forEach(validateContact);
+  CFG.questions.forEach(function(q){
+    if(q.type==="textarea"||q.type==="text") validateQ(q);
+    else if(q.type==="roles") validateRoles(q.id);
+    else if(q.type==="practicum") validatePracticum(q.id);
+    else if(q.type==="number") validateNumber(q);
+  });
+  recompute();
+
+  /* ---- reset ---- */
+  el("resetBtn").addEventListener("click", function(){
+    if(!window.confirm("Clear all your answers? This can't be undone.")) return;
+    form.querySelectorAll("input, textarea").forEach(function(e){
+      if(e.type==="checkbox"||e.type==="radio") e.checked=false; else e.value="";
+    });
+    touched = {};
+    document.querySelectorAll(".role").forEach(function(r){ r.classList.remove("checked"); });
+    document.querySelectorAll(".yesno label").forEach(function(l){ l.classList.remove("sel"); });
+    document.querySelectorAll(".practicum-detail").forEach(function(dd){ dd.hidden = true; });
+    document.querySelectorAll(".stepper input").forEach(function(i){ i.value = i.closest("[data-practicum]") ? 1 : 0; });
+    document.querySelectorAll(".feedback").forEach(function(fb){ fb.className="feedback"; fb.innerHTML=""; });
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+    el("formDate").value = new Date().toISOString().slice(0,10);
+    recompute();
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
+
+  /* ================= PDF ================= */
+  // If incomplete, guide the employer to the first missing field instead of generating.
+  el("downloadBtn").addEventListener("click", function(){
+    if (!formComplete){
+      var f = firstIncomplete();
+      if (f){
+        var input = f.querySelector("input, textarea, [data-roles], .yesno");
+        f.scrollIntoView({behavior:"smooth", block:"center"});
+        setTimeout(function(){ try{ (f.querySelector("input, textarea")||{}).focus && f.querySelector("input, textarea").focus(); }catch(e){} }, 350);
+        // flash the feedback for that field
+        var fb = f.querySelector(".feedback");
+        if (fb && !fb.textContent) setFb(fb, "warn", "This one still needs an answer.");
+      }
+      return;
+    }
+    generatePDF();
+  });
+  function val(id){ var e=el(id); return e ? (e.value||"").trim() : ""; }
+  function prettyDate(iso){ if(!iso) return ""; var d=new Date(iso+"T00:00:00"); return isNaN(d)?iso:d.toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"}); }
+
+  // Assemble the 7 official-form answers from the (possibly reordered) questions
+  function officialAnswers(){
+    var a = { q1:"", q2:"", q3:"", q4:"", q5:"", q6:"", q7:"" };
+    var get = function(id){ return val(id); };
+    var byMap = {};
+    CFG.questions.forEach(function(q){ byMap[q.mapsTo] = q; });
+
+    // q1 community
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q1") a.q1 = get(q.id); });
+
+    // q2 = roles + count + detail
+    var rolesPicked = [];
+    document.querySelectorAll('[data-roles="1"] input:checked').forEach(function(cb){ rolesPicked.push(cb.value); });
+    var nowCount = "", nowDetail = "";
+    CFG.questions.forEach(function(q){
+      if(q.mapsTo==="q2b") nowCount = get(q.id);
+      if(q.mapsTo==="q2c") nowDetail = get(q.id);
+    });
+    var nowN = parseInt(nowCount, 10); if (isNaN(nowN)) nowN = null;
+    var rolesStr = rolesPicked.length ? ("Roles graduates could fill: " + rolesPicked.join(", ") + ".") : "";
+    var q2 = [];
+    if (nowN != null && nowN > 0) {
+      q2.push("Yes — approximately " + nowN + " current opening(s)." + (rolesStr ? " " + rolesStr : ""));
+    } else if (rolesPicked.length) {
+      // no current count, but roles identified — avoid the contradictory "no vacancies"
+      q2.push("No immediate vacancies, but graduates would be qualified to fill these roles with us: " + rolesPicked.join(", ") + ".");
+    } else if (nowN === 0) {
+      q2.push("No current vacancies at the moment.");
+    }
+    if (nowDetail) q2.push(nowDetail);
+    a.q2 = q2.join(" ");
+
+    // q3 postings
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q3") a.q3 = get(q.id); });
+    // q4 hard to fill
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q4") a.q4 = get(q.id); });
+    // q5 future = count + detail
+    var futCount="", futDetail="";
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q5a") futCount=get(q.id); if(q.mapsTo==="q5b") futDetail=get(q.id); });
+    var futN = parseInt(futCount, 10); if (isNaN(futN)) futN = null;
+    var q5=[];
+    if (futN != null) q5.push(futN > 0 ? "Yes — approximately " + futN + " anticipated over the next 6 to 12 months." : "No additional openings anticipated at this time.");
+    if (futDetail) q5.push(futDetail);
+    a.q5 = q5.join(" ");
+    // q6 practicum
+    CFG.questions.forEach(function(q){
+      if(q.mapsTo==="q6"){
+        var yn = document.querySelector('input[name="'+q.id+'_yn"]:checked');
+        if(!yn){ a.q6=""; return; }
+        if(yn.value==="no"){ a.q6 = "Not at this time."; return; }
+        var cnt = val(q.id+"_count"), note = val(q.id+"_note");
+        a.q6 = "Yes - up to " + (cnt||"1") + " placement(s)." + (note? " " + note : "");
+      }
+    });
+    // q7 comments
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q7") a.q7 = get(q.id); });
+    return a;
+  }
+
+  var OFFICIAL_Q = {
+    q1: "Which community or communities is your business operating in?",
+    q2: "Do you currently have vacant positions that graduates of this training would be qualified to fill? Please list the position name(s) and how many openings.",
+    q3: "Where do you regularly post positions for your openings?",
+    q4: "Have you had a hard time filling these positions in the past? If yes, please describe the challenges you faced.",
+    q5: "Do you foresee future openings in these positions? If yes, how many openings do you anticipate over the next 6 to 12 months?",
+    q6: "If a practicum is part of the training, are you able to provide a practicum space? If so, how many placements?",
+    q7: "Do you wish to add any further comments?"
+  };
+
+  // Map characters jsPDF's standard (WinAnsi) fonts can't render to safe equivalents.
+  // Covers the common mobile-autocorrect curly quotes/dashes and a few accents.
+  function pdfSafe(s){
+    if (s == null) return "";
+    return String(s)
+      .replace(/[‘’‚‛]/g, "'")
+      .replace(/[“”„‟]/g, '"')
+      .replace(/[–—―]/g, "-")   // en/em dash -> hyphen (safe everywhere)
+      .replace(/…/g, "...")
+      .replace(/[   ]/g, " ")
+      .replace(/[•●]/g, "-")
+      .replace(/™/g, "(TM)")
+      .replace(/[^\x00-\xFF]/g, function(ch){
+        // last-resort: strip anything still outside Latin-1 so it never renders as tofu
+        return "";
+      });
+  }
+
+  function generatePDF(){
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({unit:"pt", format:"letter"});
+    var PW = doc.internal.pageSize.getWidth(), PH = doc.internal.pageSize.getHeight();
+    var M = 54, CW = PW - M*2;
+    var BLUE=[35,64,117], GOLD=[227,168,43], INK=[26,26,26];
+    var y = M, pageNum = 0;
+    var ans = officialAnswers();
+
+    // wrap text, and also hard-break any single token too wide to fit (long URLs/emails)
+    function wrap(text, width){
+      text = pdfSafe(text);
+      var maxW = width;
+      // pre-break over-long tokens so splitTextToSize never overflows
+      var broken = text.split(/(\s+)/).map(function(tok){
+        if (!tok.trim()) return tok;
+        if (doc.getTextWidth(tok) <= maxW) return tok;
+        var out = "", cur = "";
+        for (var i=0;i<tok.length;i++){
+          var t2 = cur + tok[i];
+          if (doc.getTextWidth(t2) > maxW && cur){ out += cur + "​"; cur = tok[i]; }
+          else cur = t2;
+        }
+        return out + cur;
+      }).join("");
+      return doc.splitTextToSize(broken.replace(/​/g, "\n"), width);
+    }
+
+    function footer(){ doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(120,120,120);
+      doc.text("Community Workforce Response Grant Employer Support Form - Updated April 2025", PW/2, PH-34, {align:"center"});
+      doc.text("Page " + pageNum, PW/2, PH-22, {align:"center"}); }
+    function ensure(h){ if (y + h > PH - M){ footer(); doc.addPage(); y = M; header(false); } }
+    function header(first){
+      pageNum++;
+      doc.setFillColor.apply(doc, GOLD); doc.circle(M+10, M-4, 7, "F");
+      doc.setFillColor.apply(doc, BLUE); doc.triangle(M, M+6, M+10, M-6, M+20, M+6, "F");
+      doc.setFont("helvetica","normal"); doc.setFontSize(11); doc.setTextColor.apply(doc, BLUE);
+      doc.text("Community Workforce Response Grant", PW-M, M-4, {align:"right"});
+      doc.text("Employer Support Form", PW-M, M+10, {align:"right"});
+      doc.setDrawColor.apply(doc, GOLD); doc.setLineWidth(2); doc.line(M, M+26, PW-M, M+26);
+      y = M + 42;
+      if (first){
+        doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor.apply(doc, INK);
+        var intro = "This form must be completed by an employer supporting the skills training project and returned to the applicant. This form is strictly to provide sector information on current employment needs. Completion of this form does not imply a commitment to hire on behalf of the employer.";
+        var L = doc.splitTextToSize(intro, CW); doc.text(L, M, y); y += L.length*11 + 10;
+      }
+      doc.setTextColor.apply(doc, INK);
+    }
+    function infoRow(label, value){
+      doc.setFont("helvetica","bold"); doc.setFontSize(9.5);
+      var lab = wrap(label, CW-12);
+      doc.setFont("helvetica","normal");
+      var va = value ? wrap(value, CW-12) : [""];
+      var h = Math.max(26, lab.length*11 + va.length*11 + 8);
+      ensure(h);
+      doc.setDrawColor(150,160,175); doc.setLineWidth(0.75); doc.rect(M, y, CW, h);
+      doc.setFont("helvetica","bold"); doc.setTextColor.apply(doc, INK); doc.text(lab, M+6, y+13);
+      doc.setFont("helvetica","normal"); doc.text(va, M+6, y+13 + lab.length*11);
+      y += h;
+    }
+    function qBlock(num, label, answer){
+      doc.setFont("helvetica","bold"); doc.setFontSize(9.5);
+      var ql = wrap(num + ".  " + label, CW);
+      doc.setFont("helvetica","normal");
+      var al = answer ? wrap(answer, CW-12) : [""];
+
+      // draw the question label (keep it with at least the first answer line)
+      ensure(ql.length*11 + 6 + 26);
+      doc.setFont("helvetica","bold"); doc.setFontSize(9.5); doc.setTextColor.apply(doc, INK);
+      doc.text(ql, M, y+9); y += ql.length*11 + 6;
+
+      // draw the answer box, paginating if the answer is taller than the page
+      var lineH = 12, pad = 10, minBox = 44;
+      var idx = 0;
+      doc.setFont("helvetica","normal"); doc.setTextColor.apply(doc, INK);
+      while (idx < al.length){
+        var avail = (PH - M) - y - 4;                    // room left on this page for a box
+        var linesThatFit = Math.max(1, Math.floor((avail - pad) / lineH));
+        var remaining = al.length - idx;
+        var isLast = remaining <= linesThatFit;
+        var take = isLast ? remaining : linesThatFit;
+        // if almost nothing fits, start a fresh page
+        if (!isLast && linesThatFit < 2){ footer(); doc.addPage(); y = M; header(false); doc.setFont("helvetica","normal"); doc.setTextColor.apply(doc, INK); continue; }
+        var seg = al.slice(idx, idx + take);
+        var boxH = isLast ? Math.max(minBox, seg.length*lineH + 14) : (take*lineH + pad);
+        doc.setDrawColor(150,160,175); doc.setLineWidth(0.75); doc.rect(M, y, CW, boxH);
+        doc.text(seg, M+6, y+14);
+        y += boxH;
+        idx += take;
+        if (idx < al.length){ footer(); doc.addPage(); y = M; header(false); doc.setFont("helvetica","normal"); doc.setTextColor.apply(doc, INK); }
+      }
+      y += 14;
+    }
+
+    header(true);
+    infoRow("Business name:", val("businessName"));
+    infoRow("Business address and/or website:", val("businessAddress"));
+    infoRow("Date:", prettyDate(val("formDate")));
+    infoRow("Representative first/last name & title:", val("repName"));
+    infoRow("Representative email & phone number:", val("repEmail") + "   " + val("repPhone"));
+    infoRow("Skills training course title:", CFG.programTitle);
+    infoRow("Credential/certification name:", CFG.credential);
+
+    // certify line
+    y += 4; ensure(30);
+    doc.setDrawColor.apply(doc, INK); doc.setLineWidth(1); doc.rect(M, y, 11, 11);
+    if (el("certify").checked){ doc.setLineWidth(1.2); doc.line(M+1.5, y+6, M+4.5, y+9.5); doc.line(M+4.5, y+9.5, M+9.5, y+1.5); }
+    doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor.apply(doc, INK);
+    var cl = doc.splitTextToSize("I certify that I am authorized to submit this form on behalf of the organization named above and that all information provided on this form is correct to the best of my knowledge.", CW-20);
+    doc.text(cl, M+18, y+9); y += Math.max(16, cl.length*11) + 12;
+
+    ["q1","q2","q3","q4","q5","q6","q7"].forEach(function(k, i){ qBlock(i+1, OFFICIAL_Q[k], ans[k]); });
+    footer();
+
+    var safeBiz = (val("businessName")||"").replace(/[^\w\s-]/g,"").trim().replace(/\s+/g,"_").slice(0,60);
+    if (!safeBiz) safeBiz = "Employer";
+    var safeDate = val("formDate") || new Date().toISOString().slice(0,10);
+    doc.save("CWRG_Employer_Support_" + safeBiz + "_" + safeDate + ".pdf");
+    el("statusMsg").className = "status-msg done";
+    el("statusMsg").textContent = "Downloaded. " + (CFG.returnInstruction || "Please email the PDF back to the sender.");
+  }
+})();
+`;
+
+/* ---------- run ---------- */
+build();
