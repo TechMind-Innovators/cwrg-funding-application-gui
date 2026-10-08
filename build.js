@@ -69,6 +69,19 @@ if (!sharedQuestions.length) {
   console.error("✗ phrasings.json has no shared `questions` array.");
   process.exit(1);
 }
+/* ---------- load the BC logo (embedded as a data URI for the PDF header) ---------- */
+let logoDataURI = "", logoW = 0, logoH = 0;
+const LOGO = path.join(ROOT, "assets", "bc-logo.png");
+try {
+  if (fs.existsSync(LOGO)) {
+    const buf = fs.readFileSync(LOGO);
+    logoDataURI = "data:image/png;base64," + buf.toString("base64");
+    // PNG dimensions from the IHDR chunk (bytes 16-23)
+    logoW = buf.readUInt32BE(16);
+    logoH = buf.readUInt32BE(20);
+  }
+} catch (e) { /* logo optional */ }
+
 if (!programs.length) {
   console.error("✗ No programs defined in programs.json");
   process.exit(1);
@@ -159,7 +172,10 @@ function renderPage(p, d) {
     returnInstruction: safeInline(fill(sharedNotes.returnInstruction || "")),
     roles: Array.isArray(p.roles) ? p.roles : [],
     questions: questions,
-    phrasings: phrasings
+    phrasings: phrasings,
+    logo: logoDataURI || null,
+    logoW: logoW || 1,
+    logoH: logoH || 1
   };
   const CONFIG_JSON = JSON.stringify(data).replace(/</g, "\\u003c");
 
@@ -296,6 +312,8 @@ const STYLES = String.raw`
 
   /* suggestions */
   .suggests { margin-top: 9px; display: flex; flex-direction: column; gap: 7px; }
+  .suggests-list { display: flex; flex-direction: column; gap: 7px; }
+  .suggest-more { align-self: flex-start; margin-top: 2px; }
   .suggests-label { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
   .suggest { text-align: left; font: inherit; font-size: .86rem; line-height: 1.45; color: var(--ink);
     background: var(--subtle-2); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px 9px 34px; cursor: pointer; position: relative; transition: border-color .15s, background .15s; }
@@ -504,7 +522,7 @@ const APP_JS = String.raw`
       var ph = q.placeholder != null
         ? q.placeholder
         : (hasPool
-            ? "Write your answer here…"
+            ? "Write your answer here — or tap a suggested answer below to start from, then edit it to fit."
             : "Write your answer here…");
       control = '<textarea id="' + q.id + '" rows="3" placeholder="' + esc(ph) + '"></textarea>';
     } else if (q.type === "text") {
@@ -531,14 +549,15 @@ const APP_JS = String.raw`
     var pool = !canSuggest ? [] : ((q.suggestions && q.suggestions.length)
       ? q.suggestions
       : ((CFG.phrasings && CFG.phrasings[q.id] && CFG.phrasings[q.id].pool) || []));
-    var chosen = pickN(pool, 2);
     var suggests = "";
-    if (chosen.length) {
-      suggests = '<div class="suggests"><div class="suggests-label">Suggested answers — click to use, then edit</div>';
-      chosen.forEach(function(s){
-        suggests += '<button type="button" class="suggest" data-target="' + q.id + '" data-text="' + esc(s) + '">' + esc(s) + '</button>';
-      });
-      suggests += '</div>';
+    if (pool.length) {
+      // the 2 buttons are rendered into .suggests-list by JS (so they can rotate);
+      // "Show different examples" re-rolls 2 fresh picks when the pool has more than 2.
+      suggests = '<div class="suggests" data-suggest-for="' + q.id + '">' +
+        '<div class="suggests-label">Suggested answers — click to use, then add your own detail</div>' +
+        '<div class="suggests-list"></div>' +
+        (pool.length > 2 ? '<button type="button" class="rg-regen suggest-more" data-suggest-more="' + q.id + '">↺ Show different examples</button>' : '') +
+        '</div>';
     }
 
     f.innerHTML = head + control + suggests + '<div class="feedback"></div>';
@@ -551,7 +570,7 @@ const APP_JS = String.raw`
     '<div class="section-body">' +
       field2("businessName", "Business name", "organization", "e.g. Ozz Electric Ltd.") +
       '<div class="field" data-contact="1" data-min="5"><label class="q" for="businessAddress">Business address and/or website <span class="req">*</span></label>' +
-        '<div class="hint">A full address is best; a website alone is fine if you prefer.</div>' +
+        '<div class="hint">Both your full address and website is best, but a website on its own is fine too.</div>' +
         '<input type="text" id="businessAddress" placeholder="e.g. 101 – 1680 Broadway St, Port Coquitlam, BC · www.example.com"><div class="feedback"></div></div>' +
       '<div class="row2">' +
         '<div class="field" data-contact="1" data-kind="email"><label class="q" for="repEmail">Representative email <span class="req">*</span></label>' +
@@ -620,7 +639,7 @@ const APP_JS = String.raw`
            '<span>No vacancies right now — but note our interest for the future</span></label>';
     // live, editable generated answer
     out += '<div class="rg-answer-wrap">' +
-      '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits and edit anything you’d say differently</span></div>' +
+      '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits, and feel free to edit or add more detail</span></div>' +
       '<textarea id="'+q.id+'_answer" class="rg-answer" rows="3" data-rg-answer="'+q.id+'" placeholder="Set a number beside a role above, or tick “No vacancies right now”, and we’ll draft your answer here."></textarea>' +
       '<button type="button" class="rg-regen" data-rg-regen="'+q.id+'" hidden>↺ Rewrite it differently</button>' +
       '</div>';
@@ -645,7 +664,7 @@ const APP_JS = String.raw`
     }
     out += '</div>';
     out += '<div class="rg-answer-wrap">' +
-      '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits and edit anything you’d say differently</span></div>' +
+      '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits, and feel free to edit or add more detail</span></div>' +
       '<textarea id="'+q.id+'_answer" class="rg-answer" rows="2" data-sg-answer="'+q.id+'" placeholder="Tick the places you post, or add your own, and we’ll draft your answer here."></textarea>' +
       '<button type="button" class="rg-regen" data-sg-regen="'+q.id+'" hidden>↺ Rewrite it differently</button>' +
       '</div>';
@@ -667,7 +686,7 @@ const APP_JS = String.raw`
     out += '<label class="rg-none"><input type="checkbox" id="'+q.id+'_none" data-ca="'+q.id+'">' +
            '<span>No specific number yet — but note our future interest</span></label>';
     out += '<div class="rg-answer-wrap">' +
-      '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits and edit anything you’d say differently</span></div>' +
+      '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits, and feel free to edit or add more detail</span></div>' +
       '<textarea id="'+q.id+'_answer" class="rg-answer" rows="2" data-ca-answer="'+q.id+'" placeholder="Set a number above, or tick “No specific number yet”, and we’ll draft your answer here."></textarea>' +
       '<button type="button" class="rg-regen" data-ca-regen="'+q.id+'" hidden>↺ Rewrite it differently</button>' +
       '</div>';
@@ -727,7 +746,7 @@ const APP_JS = String.raw`
       '</div>' +
       // auto-generated, editable answer (appears once Yes/No is chosen)
       '<div class="rg-answer-wrap" data-pr-answerwrap="'+q.id+'" hidden>' +
-        '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits and edit anything you’d say differently</span></div>' +
+        '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits, and feel free to edit or add more detail</span></div>' +
         '<textarea id="'+q.id+'_answer" class="rg-answer" rows="2" data-pr-answer="'+q.id+'" placeholder="Choose Yes or No above and we’ll draft your answer here."></textarea>' +
         '<button type="button" class="rg-regen" data-pr-regen="'+q.id+'" hidden>↺ Rewrite it differently</button>' +
       '</div>' +
@@ -757,20 +776,54 @@ const APP_JS = String.raw`
     });
   }
 
-  // suggestions — insert when empty; if the field already has text, ask before replacing
-  document.querySelectorAll(".suggest").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var t = el(btn.dataset.target);
-      var existing = (t.value||"").trim();
-      if (existing && existing !== btn.dataset.text) {
-        if (!window.confirm("Replace what you've written with this example? You can edit it afterwards.")) return;
-      }
-      t.value = btn.dataset.text;
-      t.dispatchEvent(new Event("input", {bubbles:true}));
-      t.focus();
-      // place caret at end so they can keep typing
-      try { t.setSelectionRange(t.value.length, t.value.length); } catch(e){}
+  /* ---- suggestions: 2 shown, rotatable through the pool ---- */
+  function suggestPool(qid){
+    var q = null; CFG.questions.forEach(function(x){ if(x.id===qid) q=x; });
+    if (!q) return [];
+    return (q.suggestions && q.suggestions.length) ? q.suggestions
+      : ((CFG.phrasings && CFG.phrasings[qid] && CFG.phrasings[qid].pool) || []);
+  }
+  // render 2 (new random) suggestion buttons into a question's list
+  function renderSuggestions(qid){
+    var wrap = document.querySelector('[data-suggest-for="'+qid+'"]');
+    if (!wrap) return;
+    var listEl = wrap.querySelector('.suggests-list');
+    var picks = pickN(suggestPool(qid), 2);
+    listEl.innerHTML = "";
+    picks.forEach(function(s){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "suggest";
+      b.textContent = s;            // textContent avoids any escaping issues
+      b._text = s;                  // keep the raw text for insertion
+      listEl.appendChild(b);
     });
+  }
+  document.querySelectorAll('[data-suggest-for]').forEach(function(wrap){
+    renderSuggestions(wrap.getAttribute('data-suggest-for'));
+  });
+  // delegated click: insert a suggestion (buttons are re-created on rotate)
+  document.getElementById("form").addEventListener("click", function(ev){
+    var btn = ev.target.closest(".suggest");
+    if (!btn) return;
+    var wrap = btn.closest("[data-suggest-for]");
+    var qid = wrap ? wrap.getAttribute("data-suggest-for") : null;
+    if (!qid) return;
+    var t = el(qid), text = btn._text != null ? btn._text : btn.textContent;
+    var existing = (t.value||"").trim();
+    // Only confirm before overwriting text the employer typed/edited themselves.
+    // Swapping between suggestions (box still holds an unedited inserted one) is instant.
+    if (existing && t.dataset.fromSuggestion !== "1") {
+      if (!window.confirm("Replace what you've written with this example? You can edit it afterwards.")) return;
+    }
+    t.value = text;
+    t.dispatchEvent(new Event("input", {bubbles:true}));   // programmatic (isTrusted=false)
+    t.dataset.fromSuggestion = "1";                        // mark AFTER dispatch so the listener's clear doesn't win
+    t.focus();
+    try { t.setSelectionRange(t.value.length, t.value.length); } catch(e){}
+  });
+  // "Show different examples" — re-roll 2 fresh picks from the pool
+  document.querySelectorAll("[data-suggest-more]").forEach(function(btn){
+    btn.addEventListener("click", function(){ renderSuggestions(btn.getAttribute("data-suggest-more")); });
   });
   // steppers (standalone number & practicum) — clamp on every input, mark touched on interaction.
   // Role-grid steppers (.rg-step) are handled by their own block below.
@@ -1061,9 +1114,16 @@ const APP_JS = String.raw`
   el("certify").addEventListener("change", recompute);
   CFG.questions.forEach(function(q){
     if (q.type === "textarea" || q.type === "text") {
-      el(q.id).addEventListener("input", function(){ validateQ(q); recompute(); });
-      el(q.id).addEventListener("blur", function(){ validateQ(q); });
+      var ctl = el(q.id);
+      ctl.addEventListener("input", function(ev){ if(ev && ev.isTrusted) delete ctl.dataset.fromSuggestion; if(ctl.tagName==="TEXTAREA") autogrow(ctl); validateQ(q); recompute(); });
+      ctl.addEventListener("blur", function(){ validateQ(q); });
     }
+  });
+  // every textarea grows to fit its content so nothing is hidden; also catches the
+  // "other roles" box and the practicum note. Runs once at init for restored drafts.
+  form.querySelectorAll("textarea").forEach(function(ta){
+    ta.addEventListener("input", function(){ autogrow(ta); });
+    autogrow(ta);
   });
 
   function setFb(fb, kind, msg){ fb.className = "feedback" + (kind?" "+kind:""); fb.innerHTML = msg ? ((ICON[kind]||"")+"<span>"+esc(msg)+"</span>") : ""; }
@@ -1372,14 +1432,15 @@ const APP_JS = String.raw`
     return a;
   }
 
+  // Official BC CWRG Employer Support Form question wording (Updated March 2026) — verbatim.
   var OFFICIAL_Q = {
     q1: "Which community or communities is your business operating in?",
-    q2: "Do you currently have vacant positions that graduates of this training would be qualified to fill? Please list the position name(s) and how many openings.",
+    q2: "Do you currently have vacant positions that successful graduates of this training would be qualified to fill (see attached course outline)? Please list the names of the position(s) and how many openings.",
     q3: "Where do you regularly post positions for your openings?",
-    q4: "Have you had a hard time filling these positions in the past? If yes, please describe the challenges you faced.",
-    q5: "Do you foresee future openings in these positions? If yes, how many openings do you anticipate over the next 6 to 12 months?",
-    q6: "If a practicum is part of the training, are you able to provide a practicum space? If so, how many placements?",
-    q7: "Do you wish to add any further comments?"
+    q4: "Have you had a hard time filling these positions in the past? If yes, please describe any challenges you faced.",
+    q5: "Do you foresee future openings in these positions? If yes, how many job openings do you anticipate over the next 6 to 12 months?",
+    q6: "As a part of training, if a practicum is required, are you providing a practicum space? If so, how many placements?",
+    q7: "How will your business support this project (for example: support with recruitment of participants, offer presentations, anticipate hiring graduates of this cohort, etc.)?"
   };
 
   // Map characters jsPDF's standard (WinAnsi) fonts can't render to safe equivalents.
@@ -1411,118 +1472,134 @@ const APP_JS = String.raw`
     }
   }
   function buildAndSavePDF(){
+    // Faithful recreation of the official BC CWRG Employer Support Form (Updated March 2026).
+    // Positions are measured from the official PDF (612x792). jsPDF y grows downward, so the
+    // measured "top" values from the official layout are used directly as y.
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF({unit:"pt", format:"letter"});
-    var PW = doc.internal.pageSize.getWidth(), PH = doc.internal.pageSize.getHeight();
-    var M = 54, CW = PW - M*2;
-    var BLUE=[35,64,117], GOLD=[227,168,43], INK=[26,26,26];
-    var y = M, pageNum = 0;
-    var ans = officialAnswers();
+    var PW = 612, PH = 792, INK = [0,0,0];
+    var LX = 72;                 // left text margin
+    var TX0 = 67.5, TX1 = 544.5; // info-table left/right
+    var BX0 = 64.5, BX1 = 540.5; // answer-box left/right
+    var pageNum = 0;
 
-    // wrap text, and also hard-break any single token too wide to fit (long URLs/emails)
+    function sz(n){ doc.setFontSize(n); }
+    function font(style){ doc.setFont("helvetica", style||"normal"); }
     function wrap(text, width){
       text = pdfSafe(text);
-      var maxW = width;
-      // pre-break over-long tokens so splitTextToSize never overflows
       var broken = text.split(/(\s+)/).map(function(tok){
         if (!tok.trim()) return tok;
-        if (doc.getTextWidth(tok) <= maxW) return tok;
-        var out = "", cur = "";
-        for (var i=0;i<tok.length;i++){
-          var t2 = cur + tok[i];
-          if (doc.getTextWidth(t2) > maxW && cur){ out += cur + "—"; cur = tok[i]; }
-          else cur = t2;
-        }
-        return out + cur;
+        if (doc.getTextWidth(tok) <= width) return tok;
+        var out="", cur="";
+        for (var i=0;i<tok.length;i++){ var t2=cur+tok[i];
+          if (doc.getTextWidth(t2)>width && cur){ out+=cur+"\u0001"; cur=tok[i]; } else cur=t2; }
+        return out+cur;
       }).join("");
-      return doc.splitTextToSize(broken.replace(/—/g, "\n"), width);
+      return doc.splitTextToSize(broken.replace(/\u0001/g,"\n"), width);
     }
 
-    function footer(){ doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(120,120,120);
-      doc.text("Community Workforce Response Grant Employer Support Form - Updated April 2025", PW/2, PH-34, {align:"center"});
-      doc.text("Page " + pageNum, PW/2, PH-22, {align:"center"}); }
-    function ensure(h){ if (y + h > PH - M){ footer(); doc.addPage(); y = M; header(false); } }
-    function header(first){
+    function headerAndFooter(){
       pageNum++;
-      doc.setFillColor.apply(doc, GOLD); doc.circle(M+10, M-4, 7, "F");
-      doc.setFillColor.apply(doc, BLUE); doc.triangle(M, M+6, M+10, M-6, M+20, M+6, "F");
-      doc.setFont("helvetica","normal"); doc.setFontSize(11); doc.setTextColor.apply(doc, BLUE);
-      doc.text("Community Workforce Response Grant", PW-M, M-4, {align:"right"});
-      doc.text("Employer Support Form", PW-M, M+10, {align:"right"});
-      doc.setDrawColor.apply(doc, GOLD); doc.setLineWidth(2); doc.line(M, M+26, PW-M, M+26);
-      y = M + 42;
-      if (first){
-        doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor.apply(doc, INK);
-        var intro = "This form must be completed by an employer supporting the skills training project and returned to the applicant. This form is strictly to provide sector information on current employment needs. Completion of this form does not imply a commitment to hire on behalf of the employer.";
-        var L = doc.splitTextToSize(intro, CW); doc.text(L, M, y); y += L.length*11 + 10;
+      doc.setTextColor.apply(doc, INK);
+      if (CFG.logo){
+        try {
+          // fit the logo within a short header band; cap height so it clears the intro
+          // (page 1, y~86) and the page-2 Q3 heading (y~76).
+          var maxH = 40, maxW = 110;
+          var lh = maxH, lw = lh * (CFG.logoW/CFG.logoH);
+          if (lw > maxW){ lw = maxW; lh = lw * (CFG.logoH/CFG.logoW); }
+          doc.addImage(CFG.logo, "PNG", LX, 20, lw, lh);
+        } catch(e){}
       }
+      font("normal"); sz(11); doc.setTextColor.apply(doc, INK);
+      doc.text("Community Workforce Response Grant", TX1, 44, {align:"right"});
+      doc.text("Employer Support Form", TX1, 58, {align:"right"});
+      sz(9);
+      doc.text("Community Workforce Response Grant Employer Support Form – Updated March 2026", PW/2, 748, {align:"center"});
+      doc.text("Page " + pageNum + " of 2", PW/2, 760, {align:"center"});
       doc.setTextColor.apply(doc, INK);
     }
-    function infoRow(label, value){
-      doc.setFont("helvetica","bold"); doc.setFontSize(9.5);
-      var lab = wrap(label, CW-12);
-      doc.setFont("helvetica","normal");
-      var va = value ? wrap(value, CW-12) : [""];
-      var h = Math.max(26, lab.length*11 + va.length*11 + 8);
-      ensure(h);
-      doc.setDrawColor(150,160,175); doc.setLineWidth(0.75); doc.rect(M, y, CW, h);
-      doc.setFont("helvetica","bold"); doc.setTextColor.apply(doc, INK); doc.text(lab, M+6, y+13);
-      doc.setFont("helvetica","normal"); doc.text(va, M+6, y+13 + lab.length*11);
-      y += h;
+    function box(x0, top, x1, bottom){
+      doc.setDrawColor(0,0,0); doc.setLineWidth(1);
+      doc.rect(x0, top, x1-x0, bottom-top);
     }
-    function qBlock(num, label, answer){
-      doc.setFont("helvetica","bold"); doc.setFontSize(9.5);
-      var ql = wrap(num + ".  " + label, CW);
-      doc.setFont("helvetica","normal");
-      var al = answer ? wrap(answer, CW-12) : [""];
-
-      // draw the question label (keep it with at least the first answer line)
-      ensure(ql.length*11 + 6 + 26);
-      doc.setFont("helvetica","bold"); doc.setFontSize(9.5); doc.setTextColor.apply(doc, INK);
-      doc.text(ql, M, y+9); y += ql.length*11 + 6;
-
-      // draw the answer box, paginating if the answer is taller than the page
-      var lineH = 12, pad = 10, minBox = 44;
-      var idx = 0;
-      doc.setFont("helvetica","normal"); doc.setTextColor.apply(doc, INK);
-      while (idx < al.length){
-        var avail = (PH - M) - y - 4;                    // room left on this page for a box
-        var linesThatFit = Math.max(1, Math.floor((avail - pad) / lineH));
-        var remaining = al.length - idx;
-        var isLast = remaining <= linesThatFit;
-        var take = isLast ? remaining : linesThatFit;
-        // if almost nothing fits, start a fresh page
-        if (!isLast && linesThatFit < 2){ footer(); doc.addPage(); y = M; header(false); doc.setFont("helvetica","normal"); doc.setTextColor.apply(doc, INK); continue; }
-        var seg = al.slice(idx, idx + take);
-        var boxH = isLast ? Math.max(minBox, seg.length*lineH + 14) : (take*lineH + pad);
-        doc.setDrawColor(150,160,175); doc.setLineWidth(0.75); doc.rect(M, y, CW, boxH);
-        doc.text(seg, M+6, y+14);
-        y += boxH;
-        idx += take;
-        if (idx < al.length){ footer(); doc.addPage(); y = M; header(false); doc.setFont("helvetica","normal"); doc.setTextColor.apply(doc, INK); }
+    // paragraph with a leading plain run + trailing bold run, word-wrapped
+    function drawRichParagraph(plain, bold, x, yTop, xRight, lineH){
+      var tokens = [];
+      pdfSafe(plain).split(/(\s+)/).forEach(function(t){ if(t) tokens.push({t:t,b:false}); });
+      pdfSafe(bold).split(/(\s+)/).forEach(function(t){ if(t) tokens.push({t:t,b:true}); });
+      var cx=x, cy=yTop;
+      tokens.forEach(function(tok){
+        font(tok.b?"bold":"normal"); sz(11);
+        var w = doc.getTextWidth(tok.t);
+        if (/^\s+$/.test(tok.t)){ if (cx+w>xRight){ cx=x; cy+=lineH; } else cx+=w; return; }
+        if (cx+w>xRight){ cx=x; cy+=lineH; }
+        doc.text(tok.t, cx, cy); cx+=w;
+      });
+    }
+    function drawQuestion(num, qtext, qTop, bx0, bTop, bx1, bBottom, answer){
+      font("normal"); sz(11); doc.setTextColor.apply(doc, INK);
+      var textX = 90;
+      var lines = wrap(qtext, TX1 - textX);
+      doc.text(num + ".", LX, qTop);
+      doc.text(lines, textX, qTop);
+      box(bx0, bTop, bx1, bBottom);
+      if (answer){
+        font("normal"); sz(11);
+        var al = wrap(answer, (bx1-bx0)-12);
+        var maxLines = Math.floor((bBottom-bTop-10)/13);
+        if (al.length > maxLines) al = al.slice(0, maxLines);
+        doc.text(al, bx0+6, bTop+14);
       }
-      y += 14;
     }
 
-    header(true);
-    infoRow("Business name:", val("businessName"));
-    infoRow("Business address and/or website:", val("businessAddress"));
-    infoRow("Date:", prettyDate(val("formDate")));
-    infoRow("Representative first/last name & title:", val("repName"));
-    infoRow("Representative email & phone number:", val("repEmail") + "   " + val("repPhone"));
-    infoRow("Skills training course title:", CFG.programTitle);
-    infoRow("Credential/certification name:", CFG.credential);
+    var ans = officialAnswers();
+    var ROWH = 36;
 
-    // certify line
-    y += 4; ensure(30);
-    doc.setDrawColor.apply(doc, INK); doc.setLineWidth(1); doc.rect(M, y, 11, 11);
-    if (el("certify").checked){ doc.setLineWidth(1.2); doc.line(M+1.5, y+6, M+4.5, y+9.5); doc.line(M+4.5, y+9.5, M+9.5, y+1.5); }
-    doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor.apply(doc, INK);
-    var cl = doc.splitTextToSize("I certify that I am authorized to submit this form on behalf of the organization named above and that all information provided on this form is correct to the best of my knowledge.", CW-20);
-    doc.text(cl, M+18, y+9); y += Math.max(16, cl.length*11) + 12;
+    /* ---- PAGE 1 ---- */
+    headerAndFooter();
+    drawRichParagraph(
+      "This form must be completed by an employer supporting the skills training project and returned to the applicant. ",
+      "This form is strictly to provide sector information on current employment needs. Completion of this form does not imply a commitment to hire on behalf of the employer.",
+      LX, 86, TX1, 13);
 
-    ["q1","q2","q3","q4","q5","q6","q7"].forEach(function(k, i){ qBlock(i+1, OFFICIAL_Q[k], ans[k]); });
-    footer();
+    var tblTop = 128.5;
+    var rows = [
+      ["Business name:", val("businessName")],
+      ["Business address and/or website:", val("businessAddress")],
+      ["Date:", prettyDate(val("formDate"))],
+      ["Representative first/last name & title:", val("repName")],
+      ["Representative email & phone number:", (val("repEmail") + (val("repPhone") ? "   " + val("repPhone") : "")).trim()],
+      ["Skills training course title:", CFG.programTitle],
+      ["Credential/certification name:", CFG.credential]
+    ];
+    box(TX0, tblTop, TX1, tblTop + ROWH*7);
+    for (var r=1;r<7;r++){ doc.setLineWidth(1); doc.setDrawColor(0,0,0); doc.line(TX0, tblTop+ROWH*r, TX1, tblTop+ROWH*r); }
+    rows.forEach(function(row, i){
+      var top = tblTop + ROWH*i;
+      font("bold"); sz(10); doc.setTextColor.apply(doc, INK);
+      doc.text(pdfSafe(row[0]), LX, top + 11);
+      if (row[1]){ font("normal"); sz(10); doc.text(wrap(row[1], TX1-LX-6), LX, top + 23); }
+    });
+
+    var certTop = 399.5;
+    doc.setLineWidth(1); doc.setDrawColor(0,0,0); doc.rect(LX, certTop, 14, 14);
+    if (el("certify").checked){ doc.setLineWidth(1.4);
+      doc.line(LX+2.5, certTop+7.5, LX+5.5, certTop+11); doc.line(LX+5.5, certTop+11, LX+12, certTop+2.5); }
+    font("normal"); sz(11); doc.setTextColor.apply(doc, INK);
+    doc.text(wrap("I certify that I am authorized to submit this form on behalf of the organization named above and that all information provided on this form is correct to the best of my knowledge.", TX1-(LX+20)), LX+20, certTop+8);
+
+    drawQuestion(1, OFFICIAL_Q.q1, 445.9, BX0, 466.5, BX1, 538.5, ans.q1);
+    drawQuestion(2, OFFICIAL_Q.q2, 558.0, BX0, 587.5, BX1, 674.5, ans.q2);
+
+    /* ---- PAGE 2 ---- */
+    doc.addPage();
+    headerAndFooter();
+    drawQuestion(3, OFFICIAL_Q.q3, 76.5,  BX0, 96.5,  BX1, 173.5, ans.q3);
+    drawQuestion(4, OFFICIAL_Q.q4, 187.7, BX0, 221.5, BX1, 294.5, ans.q4);
+    drawQuestion(5, OFFICIAL_Q.q5, 309.0, BX0, 343.5, BX1, 415.5, ans.q5);
+    drawQuestion(6, OFFICIAL_Q.q6, 430.3, BX0, 464.5, BX1, 548.5, ans.q6);
+    drawQuestion(7, OFFICIAL_Q.q7, 563.0, BX0, 597.5, BX1, 681.5, ans.q7);
 
     var safeBiz = (val("businessName")||"").replace(/[^\w\s-]/g,"").trim().replace(/\s+/g,"_").slice(0,60);
     if (!safeBiz) safeBiz = "Employer";

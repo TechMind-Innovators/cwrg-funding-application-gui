@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Cybersecurity &amp; Threat Intelligence — Employer Form</title>
+<meta name="description" content="Employer support form for the Cybersecurity &amp; Threat Intelligence program — a collaboration between TechMind Innovators and LaSalle College.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+
+  :root {
+    --bc-blue: #234075; --bc-gold: #e3a82b;
+    --ink: #1a1a1a; --muted: #5b6472;
+    --line: #d4d9e0; --line-strong: #9aa3b0;
+    --bg: #f4f6f9; --card: #ffffff;
+    --subtle: #fafbfc; --subtle-2: #f7f9fc;
+    --note-bg: #f0f4fb; --note-border: #d7e1f2; --note-ink: #2b3a57;
+    --header-ink: #ffffff;
+    --good: #1f8a4c; --good-bg: #ecf8f0;
+    --warn: #b4690e; --warn-bg: #fdf3e6;
+    --bad: #b42318; --bad-bg: #fdeceb;
+    --accent: #234075; --accent-ink: #2d508f; --focus: rgba(35,64,117,.14);
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.04);
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --ink:#e8ecf2; --muted:#9aa5b5; --line:#313a47; --line-strong:#4a5564;
+    --bg:#11151b; --card:#1a202a; --subtle:#1f2630; --subtle-2:#202834;
+    --note-bg:#1b2534; --note-border:#2b3c54; --note-ink:#bcd0ee;
+    --good:#4cc47d; --good-bg:#16281d; --warn:#e0a243; --warn-bg:#2a2114;
+    --bad:#f0786b; --bad-bg:#2c1817;
+    --accent:#7ea2dd; --accent-ink:#9bb8e8; --focus:rgba(126,162,221,.24);
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }}
+  :root[data-theme="dark"]{
+    --ink:#e8ecf2; --muted:#9aa5b5; --line:#313a47; --line-strong:#4a5564;
+    --bg:#11151b; --card:#1a202a; --subtle:#1f2630; --subtle-2:#202834;
+    --note-bg:#1b2534; --note-border:#2b3c54; --note-ink:#bcd0ee;
+    --good:#4cc47d; --good-bg:#16281d; --warn:#e0a243; --warn-bg:#2a2114;
+    --bad:#f0786b; --bad-bg:#2c1817;
+    --accent:#7ea2dd; --accent-ink:#9bb8e8; --focus:rgba(126,162,221,.24);
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    color: var(--ink); background: var(--bg); line-height: 1.5; font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+  img { max-width: 100%; }
+
+  .topbar { background: var(--bc-blue); color: var(--header-ink); border-bottom: 4px solid var(--bc-gold); }
+  .topbar-inner { max-width: 760px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; gap: 14px; }
+  .crest { width: 40px; height: 40px; flex: none; border-radius: 6px; background: #fff; display: grid; place-items: center; }
+  .crest svg { width: 32px; height: 32px; display: block; }
+  .topbar h1 { font-size: 1rem; margin: 0; font-weight: 600; letter-spacing: .2px; }
+  .topbar p { margin: 2px 0 0; font-size: .8rem; opacity: .88; }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 22px 20px 220px; }
+
+  .intro { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow); margin-bottom: 20px; }
+  .intro-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .intro-badge { font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--accent-ink); background: var(--note-bg); border: 1px solid var(--note-border); border-radius: 99px; padding: 3px 10px; }
+  .intro-time { font-size: .82rem; color: var(--muted); font-weight: 500; }
+  .intro h2 { margin: 0 0 6px; font-size: 1.12rem; text-wrap: balance; }
+  .collab { font-size: .9rem; color: var(--muted); margin: 0 0 12px; }
+  .collab strong { color: var(--accent-ink); }
+  .intro .goal { margin: 0 0 14px; font-size: .95rem; }
+  .note { border-radius: 8px; padding: 12px 15px; font-size: .9rem; margin-top: 4px; }
+  .note.reassure { background: var(--good-bg); border: 1px solid var(--good); color: var(--ink); }
+  .note.reassure .pill { display:inline-block; font-weight:700; color: var(--good); font-size:.76rem; letter-spacing:.04em; text-transform:uppercase; margin-bottom:4px; }
+
+  .baked { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 14px 0 0; padding: 12px 15px; background: var(--subtle-2); border: 1px solid var(--line); border-radius: 8px; font-size: .88rem; }
+  .baked dt { color: var(--muted); font-weight: 500; }
+  .baked dd { margin: 0; font-weight: 600; }
+
+  .progress-wrap { margin-top: 18px; }
+  .progress-label { font-size: .8rem; color: var(--muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .progress-track { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: var(--bc-blue); border-radius: 99px; transition: width .3s ease; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .progress-fill { background: var(--accent); } }
+  :root[data-theme="dark"] .progress-fill { background: var(--accent); }
+
+  .section { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 18px; overflow: hidden; }
+  .section-head { padding: 13px 20px; border-bottom: 1px solid var(--line); background: var(--subtle); }
+  .section-head h3 { margin: 0; font-size: .98rem; color: var(--accent-ink); }
+  .section-body { padding: 18px 20px; }
+
+  .field { margin-bottom: 20px; }
+  .field:last-child { margin-bottom: 0; }
+  label.q { display: block; font-weight: 600; font-size: .95rem; margin-bottom: 3px; }
+  label.q .num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--bc-blue); color: #fff; font-size: .76rem; font-weight: 700; margin-right: 8px; vertical-align: middle; }
+  .req { color: var(--bad); font-weight: 700; }
+  .opt { color: var(--muted); font-weight: 500; font-size: .82rem; }
+  .hint { font-size: .85rem; color: var(--muted); margin: 2px 0 9px; }
+
+  input[type=text], input[type=email], input[type=tel], input[type=date], textarea {
+    width: 100%; font: inherit; font-size: .95rem; padding: 10px 12px;
+    border: 1.5px solid var(--line-strong); border-radius: 8px; background: var(--card); color: var(--ink);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
+  input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus); }
+  textarea { resize: vertical; min-height: 84px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 520px){ .row2 { grid-template-columns: 1fr; } }
+
+  /* suggestions */
+  .suggests { margin-top: 9px; display: flex; flex-direction: column; gap: 7px; }
+  .suggests-list { display: flex; flex-direction: column; gap: 7px; }
+  .suggest-more { align-self: flex-start; margin-top: 2px; }
+  .suggests-label { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  .suggest { text-align: left; font: inherit; font-size: .86rem; line-height: 1.45; color: var(--ink);
+    background: var(--subtle-2); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px 9px 34px; cursor: pointer; position: relative; transition: border-color .15s, background .15s; }
+  .suggest:hover { border-color: var(--accent); }
+  .suggest::before { content: "+"; position: absolute; left: 12px; top: 8px; font-weight: 700; color: var(--accent-ink); font-size: 1rem; line-height: 1.2; }
+  .suggest .cap { display:block; font-size:.72rem; color: var(--muted); margin-top: 3px; }
+
+  /* roles checklist */
+  .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 520px){ .roles { grid-template-columns: 1fr; } }
+  .role { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border: 1.5px solid var(--line-strong); border-radius: 8px; cursor: pointer; font-size: .9rem; transition: border-color .15s, background .15s; }
+  .role:hover { border-color: var(--accent); }
+  .role input { width: 17px; height: 17px; accent-color: var(--bc-blue); flex: none; }
+  .role.checked { border-color: var(--accent); background: var(--note-bg); }
+  .roles-other { margin-top: 12px; }
+  .roles-other-label { display: block; font-size: .85rem; font-weight: 500; margin-bottom: 5px; color: var(--ink); }
+  .roles-other textarea { min-height: 54px; }
+
+  /* role + counter grid (Question 2) */
+  .rg-rows { display: flex; flex-direction: column; gap: 8px; }
+  .rg-row { display: flex; align-items: center; gap: 10px; }
+  .rg-name { flex: 1 1 auto; min-width: 0; font-size: .92rem; }
+  .rg-name.rg-fixed { padding: 9px 12px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--subtle); }
+  input.rg-name { padding: 9px 12px; border: 1.5px dashed var(--line-strong); border-radius: 8px; background: var(--card); color: var(--ink); font: inherit; font-size: .92rem; }
+  input.rg-name:focus { outline: none; border-style: solid; border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus); }
+  .rg-step { flex: 0 0 auto; }
+  .rg-step button { width: 38px; height: 40px; }
+  .rg-step input { width: 52px; }
+  .rg-none { display: flex; align-items: center; gap: 9px; margin-top: 12px; font-size: .9rem; cursor: pointer; }
+  .rg-none input { width: 17px; height: 17px; accent-color: var(--bc-blue); flex: none; }
+  .rg-answer-wrap { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .rg-answer-label { font-size: .82rem; font-weight: 600; color: var(--accent-ink); margin-bottom: 6px; }
+  .rg-answer { width: 100%; font: inherit; font-size: .95rem; padding: 10px 12px; border: 1.5px solid var(--line-strong); border-radius: 8px; background: var(--card); color: var(--ink); resize: vertical; min-height: 74px; }
+  .rg-answer:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus); }
+  .rg-regen { margin-top: 9px; background: var(--card); border: 1.5px solid var(--line-strong); color: var(--accent-ink); font: inherit; font-size: .84rem; font-weight: 600; cursor: pointer; padding: 7px 14px; border-radius: 99px; display: inline-flex; align-items: center; gap: 5px; }
+  .rg-regen:hover { border-color: var(--accent); background: var(--subtle); }
+
+  /* source checklist (Question 3) */
+  .src-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 520px){ .src-list { grid-template-columns: 1fr; } }
+  .src-item { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border: 1.5px solid var(--line-strong); border-radius: 8px; cursor: pointer; font-size: .9rem; transition: border-color .15s, background .15s; }
+  .src-item:hover { border-color: var(--accent); }
+  .src-item input { width: 17px; height: 17px; accent-color: var(--bc-blue); flex: none; }
+  .src-item.checked { border-color: var(--accent); background: var(--note-bg); }
+  .src-custom-rows { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  input.src-custom { width: 100%; padding: 9px 12px; border: 1.5px dashed var(--line-strong); border-radius: 8px; background: var(--card); color: var(--ink); font: inherit; font-size: .9rem; }
+  input.src-custom:focus { outline: none; border-style: solid; border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus); }
+
+  /* single count + answer (Question 5) */
+  .ca-row { display: flex; align-items: center; gap: 10px; }
+
+  /* number stepper */
+  .stepper { display: inline-flex; align-items: center; border: 1.5px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+  .stepper button { font: inherit; font-size: 1.1rem; width: 42px; height: 42px; border: none; background: var(--subtle); color: var(--ink); cursor: pointer; }
+  .stepper button:hover { background: var(--line); }
+  .stepper input { width: 64px; text-align: center; border: none; border-left: 1.5px solid var(--line-strong); border-right: 1.5px solid var(--line-strong); border-radius: 0; font-size: 1rem; -moz-appearance: textfield; }
+  .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .stepper-unit { margin-left: 10px; color: var(--muted); font-size: .9rem; }
+
+  /* practicum (radio yes/no + conditional) */
+  .yesno { display: flex; gap: 10px; margin-bottom: 10px; }
+  .yesno label { flex: 1; text-align: center; padding: 9px; border: 1.5px solid var(--line-strong); border-radius: 8px; cursor: pointer; font-size: .9rem; font-weight: 500; }
+  .yesno input { position: absolute; opacity: 0; pointer-events: none; }
+  .yesno label.sel { border-color: var(--accent); background: var(--note-bg); color: var(--accent-ink); font-weight: 600; }
+  .yesno label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .feedback { font-size: .82rem; margin-top: 7px; min-height: 1em; display: flex; gap: 6px; align-items: flex-start; }
+  .feedback.good { color: var(--good); } .feedback.warn { color: var(--warn); } .feedback.bad { color: var(--bad); }
+  .feedback svg { flex: none; margin-top: 2px; }
+
+  .certify { display: flex; gap: 10px; align-items: flex-start; background: var(--subtle-2); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; font-size: .9rem; }
+  .certify input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--bc-blue); }
+
+  .actionbar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line); box-shadow: 0 -4px 20px rgba(16,24,40,.08); z-index: 50; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .actionbar-inner { max-width: 760px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .status-msg { font-size: .85rem; color: var(--muted); min-width: 0; flex: 1 1 140px; }
+  .status-msg.done { color: var(--good); font-weight: 500; }
+  .status-msg.err { color: var(--bad); font-weight: 500; }
+  .btns { display: flex; gap: 10px; flex: 0 0 auto; }
+  @media (max-width: 420px){
+    .actionbar-inner { padding: 10px 16px; }
+    .btns { flex: 1 1 100%; }
+    .btns button { flex: 1; }
+    button.primary, button.ghost { padding: 11px 12px; }
+  }
+  button.primary, button.ghost { font: inherit; font-weight: 600; font-size: .92rem; padding: 11px 18px; border-radius: 8px; cursor: pointer; border: 1.5px solid transparent; }
+  button.primary { background: var(--bc-blue); color: #fff; }
+  button.primary:hover { background: #1b3460; }
+  /* muted until the form is complete; still clickable so it can guide the user to what's missing */
+  button.primary[aria-disabled="true"] { opacity: .5; }
+  button.primary.is-ready { opacity: 1; }
+  button.ghost { background: var(--card); color: var(--accent-ink); border-color: var(--line-strong); }
+  button.ghost:hover { background: var(--subtle); }
+
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* iOS zooms the page when a focused input is <16px; force 16px on small screens */
+  @media (max-width: 640px){
+    input[type=text], input[type=email], input[type=tel], input[type=date], textarea,
+    input.rg-name, input.src-custom, .rg-answer, .stepper input, .rg-step input, .ca-step input, .pr-step input { font-size: 16px; }
+  }
+  .footnote { text-align: center; color: var(--muted); font-size: .78rem; margin-top: 24px; }
+  .field.invalid input, .field.invalid textarea { border-color: var(--bad); }
+  @media (prefers-reduced-motion: reduce){ * { animation-duration: .001ms !important; transition-duration: .001ms !important; } }
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="crest" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="18" r="8" fill="#e3a82b"/>
+        <path d="M4 38 L18 22 L28 32 L38 20 L44 38 Z" fill="#234075"/>
+        <rect x="2" y="37" width="44" height="4" fill="#234075"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Community Workforce Response Grant</h1>
+      <p id="topSub">Employer Support Form</p>
+    </div>
+  </div>
+</div>
+<div class="wrap">
+  <div class="intro" id="intro"><!-- filled by JS --></div>
+  <form id="form"><!-- filled by JS --></form>
+  <p class="footnote" id="footnote"></p>
+</div>
+<div class="actionbar">
+  <div class="actionbar-inner">
+    <div class="status-msg" id="statusMsg"></div>
+    <div class="btns">
+      <button type="button" class="ghost" id="resetBtn">Clear</button>
+      <button type="button" class="primary" id="downloadBtn" aria-disabled="true">Download completed PDF</button>
+    </div>
+  </div>
+</div>
+
+<script id="program-config" type="application/json">{"college":"LaSalle College","programTitle":"Cybersecurity & Threat Intelligence","credential":"Cybersecurity & Threat Intelligence Diploma","charityName":"TechMind Innovators","charityDescriptor":"a registered Canadian charity","intro":{"badge":"Interactive form","heading":"Employer Support Form","builtByHtml":"This is an interactive form built by \u003cstrong>TechMind Innovators\u003c/strong> to make answering as easy as possible. At the end, you can download the completed form and email it back to the person who sent you this link.","timeEstimate":"About 5 minutes","goalHtml":"We&#39;re working to bring grant-funded \u003cstrong>Cybersecurity &amp; Threat Intelligence\u003c/strong> training to your community, in partnership with \u003cstrong>LaSalle College\u003c/strong>. Your perspective helps the Province of BC see where these skills are needed most, so local people can train for careers in your industry and businesses like yours gain job-ready talent close to home. A few minutes of your insight can help build that talent pipeline."},"notCommittedNote":"Completing this form does \u003cstrong>not\u003c/strong> commit your company to hiring anyone. It gives the Province of BC a picture of employment needs in your sector — that&#39;s all. Please answer candidly.","footerNote":"This form runs entirely in your browser — nothing you enter is sent anywhere until you choose to share the PDF. When you finish, you download a completed PDF and email it back to the person who sent you this link.","returnInstruction":"Please email the completed PDF back to the person who sent you this link.","roles":["IT Security Specialist","Cybersecurity Analyst","Security Analyst","IT Support Specialist","Information Security Specialist","Risk & Compliance Analyst","Network Security Administrator","Security Consultant","Incident Response Analyst","Threat Intelligence Analyst"],"questions":[{"id":"communities","type":"textarea","label":"Which community or communities does your business operate in?","hint":"Name the actual cities or regions where your crews and offices work — not just your head office. Local, specific places make the strongest case.","mapsTo":"q1"},{"id":"roleDemand","type":"rolegrid","label":"Do you currently have vacant positions that graduates of this program could fill? Set how many of each role.","hint":"Set a number beside each role you currently have open that graduates could fill. Think broadly too — roles people could grow into, or skills you wish your current team had, are worth noting. Add your own roles in the blank rows. If you have no current vacancies, tick \"No vacancies right now\" and we'll note your future interest instead.","mapsTo":"q2"},{"id":"postings","type":"sourcegrid","label":"Where do you regularly post these openings?","hint":"Tick the places you use, or add your own. We'll draft your answer below — you can edit it.","mapsTo":"q3"},{"id":"hardToFill","type":"textarea","label":"Have these positions been hard to fill in the past? If so, what made it hard?","hint":"What's made it hard to find the right people? The suggested answers below are a good starting point — pick the closest one and tweak it.","mapsTo":"q4"},{"id":"futureOpenings","type":"countanswer","label":"Do you foresee future openings in these positions over the next 6 to 12 months? If so, how many?","hint":"Set your best estimate of anticipated openings. A forward number shows the need is lasting, not a one-off. If you can't put a figure on it yet, tick \"No specific number yet\" and we'll note your future interest.","min":0,"max":50,"step":1,"unit":"anticipated openings","mapsTo":"q5"},{"id":"practicum","type":"practicum","label":"If a practicum were part of the training, could you host a student? If so, how many?","hint":"This one is purely hypothetical — this program does not actually include a placement, so you're not committing to anything. It just asks whether, in principle, you'd be open to hosting. \"No\" is a perfectly fine answer; either way we'll draft a response you can edit.","mapsTo":"q6"},{"id":"comments","type":"textarea","label":"Anything else you'd like to add?","hint":"Optional. A sentence on the skills shortage in your sector, or your intent to interview graduates, reinforces that you're a real local partner.","optional":true,"mapsTo":"q7"}],"phrasings":{"communities":{"question":"Which community or communities does your business operate in? (Official Q1.) Strong answers name specific BC cities/regions, grounding the demand locally.","pool":["We operate out of Surrey and the wider Metro Vancouver region, with most of our job sites spread across the Fraser Valley from Langley to Chilliwack.","Our shop is based in Prince George and we take on work throughout northern BC, including Vanderhoof, Fort St. James and several surrounding First Nations communities where we struggle to find local tradespeople.","Our office is in Port Coquitlam, and we also have employees working in Surrey, Burnaby, Richmond, Vancouver, Victoria and Nanaimo depending on where our worksites are located.","We're based on Vancouver Island, mainly Nanaimo and the central island, and travel up-island for larger projects.","We work throughout the Okanagan — Kelowna, Vernon and Penticton — and occasionally take on contracts in Kamloops.","We operate across the Lower Mainland, with our main office in Burnaby and crews regularly working in Coquitlam, Delta and Langley.","Our business is based in Victoria and we serve the Greater Victoria area and the southern Gulf Islands.","We're a Kootenay-based company working across Nelson, Castlegar and Trail, where skilled trades are especially hard to find locally.","We're headquartered in Abbotsford and most of our work is in the Fraser Valley, from Mission through to Hope.","Our main office is in Kelowna and we cover the Central Okanagan, with projects as far out as Vernon and West Kelowna.","We operate in and around Kamloops, serving the Thompson-Nicola region and travelling to smaller interior communities as needed.","We're based in Richmond and work throughout Metro Vancouver, with a lot of our projects in Vancouver and the North Shore.","Our crews work across the North Island — Campbell River, Courtenay and Port Hardy — where qualified people can be very hard to find.","We're located in Langley and take on work throughout the Fraser Valley and south Metro Vancouver, including Surrey and Delta.","We operate in Fort St. John and across the Peace region, where the labour shortage in skilled roles is especially acute.","Our business serves the Sunshine Coast, from Gibsons to Powell River, and we occasionally travel to the Lower Mainland for larger jobs.","We're based in Cranbrook and cover the East Kootenay, including Kimberley, Fernie and Invermere.","We work throughout Greater Victoria and the Saanich Peninsula, and take on island-wide contracts when they come up.","Our head office is in North Vancouver and we work across the North Shore and into Squamish and Whistler.","We operate in Chilliwack and the eastern Fraser Valley, serving Agassiz, Hope and the surrounding rural communities.","We're a Nanaimo-based company and most of our work is on central and northern Vancouver Island.","We cover the Comox Valley and much of central Vancouver Island, where trained candidates are in short supply.","Our office is in Burnaby and our crews work right across Metro Vancouver depending on the project.","We work in Penticton and the South Okanagan, from Summerland down to Osoyoos.","We're based in Terrace and serve northwest BC, including Kitimat, Prince Rupert and nearby communities.","We operate throughout the Tri-Cities — Coquitlam, Port Coquitlam and Port Moody — and the surrounding Metro Vancouver area.","Our business is in Vernon and we cover the North Okanagan and Shuswap, from Armstrong to Salmon Arm.","We're based in Maple Ridge and work across the eastern Lower Mainland and into the Fraser Valley.","We serve the Cowichan Valley and south Vancouver Island, with our main shop in Duncan.","We operate in Mission and the central Fraser Valley, and we regularly take on work in Abbotsford and Chilliwack.","Our crews work across the Sea-to-Sky corridor, from West Vancouver up through Squamish, Whistler and Pemberton.","We're based in Williams Lake and serve the Cariboo, where finding people with the right training is an ongoing challenge."]},"roleDemand":{"question":"Which roles could graduates of this program fill, and how many of each? (Official Q2: Do you currently have vacant positions that successful graduates of this training would be qualified to fill? Please list the names of the position(s) and how many openings.)","slot":"{roles}","positive":["Yes. We currently have openings that graduates of this training would be well qualified to fill: {roles}.","Yes — we have active vacancies that these graduates could step into, specifically {roles}.","We do have current openings well suited to graduates of this program: {roles}.","Yes. Right now we're looking to fill {roles}, and graduates of this training would be strong candidates.","We have immediate needs that this training maps directly onto: {roles}.","Yes, there are positions open with us today that graduates could fill — {roles}.","We currently have room for {roles}, and this credential is exactly the preparation we look for.","Yes. Graduates would be qualified for several roles we're hiring for now: {roles}.","We have live openings that fit this training well: {roles}.","Yes — our current vacancies include {roles}, all of which graduates of this program could take on.","At the moment we're actively trying to fill {roles}, and this is the kind of training that would prepare someone to do that work.","Yes, we have real demand right now for {roles}, and graduates of this program would be a natural fit.","We currently have openings for {roles} that we'd be glad to see qualified local graduates apply to.","Yes. These are roles we need filled today and that graduates could move into: {roles}.","We have present-day vacancies that align with this training: {roles}.","Yes — we could use {roles} right now, and this credential covers the core skills for those roles.","Our current hiring needs include {roles}, which graduates of this program would be equipped to fill.","Yes. There is genuine demand in our shop today for {roles}, and this training speaks directly to it.","We're currently short on {roles}, and graduates of this program would help us close that gap.","Yes, we have openings now for {roles} — exactly the kind of work this training prepares people for.","We have immediate openings for {roles}, and we'd welcome applications from graduates of this program.","Yes. The roles we most need filled right now — {roles} — line up closely with what this training delivers.","We currently have positions available for {roles} that graduates of this credential could fill.","Yes — there's real, present demand with us for {roles}, and this program builds exactly those skills."],"negative":["We don't have vacancies open at this exact moment, but roles like these are a regular part of our hiring, and we'd welcome qualified local graduates as our needs grow.","No immediate openings today, though this is the kind of talent we return to the market for often — graduates of this program would be on our radar as we grow.","Nothing open right now, but the skills this training builds are ones we consistently need, and we expect to be hiring for them again before long.","We're fully staffed at the moment, but we see steady demand for these skills in our sector and would be glad to consider graduates as positions come up.","No current vacancies, but we anticipate needing this kind of talent as our workload grows, and a local pipeline of graduates would be genuinely valuable to us.","Not right now — but roles like these turn over and expand for us over time, and we'd happily look at graduates of this program when they do.","We have no openings today, though we view this training as building exactly the skills our industry will keep needing, including here.","No vacancies at the moment, but we're optimistic about growth, and graduates with this credential are the kind of people we'd want to hire when we expand.","Nothing open presently, but we'd keep graduates of this program in mind — these are skills that come up regularly in our hiring.","We're not hiring for this today, but the training targets a real and recurring need in our sector, and we'd welcome local graduates down the line.","No current openings, though we expect that to change as projects ramp up — and this is precisely the skill set we'd be recruiting for.","Not at this moment, but we see this training filling a gap our industry feels broadly, and we'd be glad to consider its graduates in future.","We don't have a vacancy open today, but we hire for these skills periodically and would value a stronger local pool of qualified graduates.","No immediate need, but we're growing, and roles drawing on this training are the kind we expect to open as we do.","Nothing available right now, but the demand for these skills in our region is real, and we'd support graduates finding their footing here.","We're set for now, though we anticipate future openings in this area and would welcome graduates of this program when they arise.","No vacancies currently, but this training reflects where our sector is heading, and we'd be happy to consider graduates as our needs develop.","Not hiring for this today, but these are skills we keep coming back to, and a reliable stream of local graduates would help us plan ahead.","We have no openings at present, but we'd gladly keep in touch — graduates with this credential are exactly who we look for when roles open.","No current vacancies, but we believe in where this training is going and expect it will match real openings with us as we grow.","Nothing open just now, but we'd encourage graduates to reach out — our hiring in this area tends to come in waves, and skilled people are always welcome.","We're not recruiting for this right now, but the need is real in our industry, and we'd happily consider program graduates as future opportunities come up.","No immediate positions, though we see clear long-term demand for these skills and would value graduates joining our local talent pool.","Not at this time, but we're confident this kind of training meets a lasting need in our sector, and we'd be glad to look at its graduates as we expand."]},"postings":{"question":"Where do you regularly post your openings? (Official Q3: Where do you regularly post positions for your openings?)","slot":"{sources}","sources":["Indeed","WorkBC Job Board","our company website / careers page","LinkedIn","recruiters or staffing agencies","word of mouth and employee referrals","trade or union job boards","local colleges and training schools","social media (Facebook, Instagram)","industry associations and networks"],"templates":["We advertise these positions through {sources}.","We recruit for these roles mainly through {sources}.","Our hiring for these roles runs through {sources}.","We use {sources} to get our openings in front of candidates.","We rely on {sources} to fill these positions.","We advertise through {sources}, though the right candidates can still be slow to come forward.","Our usual channels for these positions are {sources}.","We recruit through {sources}, and we've found strong local candidates in short supply.","We cast a wide net using {sources}.","We promote our openings via {sources}.","We handle recruitment for these roles through {sources}.","Our openings reach candidates through {sources}.","We fill these roles mainly via {sources}.","When we're hiring for these roles, we turn to {sources}.","We find candidates for these positions through {sources}.","Our recruiting for these roles relies on {sources}.","We get the word out about these openings through {sources}.","We typically source candidates for these roles via {sources}.","We draw on {sources} when we need to fill these positions.","We reach candidates for these roles through {sources}, and it's still often a slow process.","The main ways we recruit for these roles are {sources}.","We look for candidates through {sources}."]},"hardToFill":{"question":"Have these positions been hard to fill in the past? If so, what made it hard? (Official Q4: Have you had a hard time filling these positions in the past? If yes, please describe the challenges you faced.) Strong answers point to a SKILLS/CREDENTIAL gap, not pay or location.","pool":["Yes, consistently. The applicants we get either have no hands-on experience or lack the specific skills and certification the role requires, so we spend months either leaving the seat empty or training from scratch. A pre-qualified cohort from this program would close exactly that gap.","Very hard. There's a real shortage of people in our area with the foundational skills this work needs — most applicants are self-taught with no recognized credential, and we can't take the risk on fully unqualified hires.","Yes. The biggest obstacle is finding candidates who already have the technical training; we get plenty of applications, but few come with the specific skills the job demands.","It's been a persistent challenge. Qualified people with this exact skill set are rare in our region, so roles stay open far longer than we'd like.","Yes — the problem isn't interest, it's readiness. Applicants often need months of training before they can contribute, and we don't always have the capacity to train from the ground up.","We struggle to find people who hold the right certification. Without a local training pipeline, we're competing for a very small pool of already-qualified workers.","Definitely. Most candidates we see lack the hands-on, job-ready skills this role requires, and we've had to turn down work because we couldn't staff it.","Yes. The gap is specifically in formal training — we meet plenty of willing people, but very few with the recognized credential and practical skills we need.","Filling these roles has been slow and difficult. The skills are specialized, the qualified candidate pool is thin, and we often end up leaning on overtime from existing staff.","Yes, repeatedly. We've left positions open for months because applicants don't have the certification or the practical experience the work requires.","It's a real bottleneck. There simply aren't enough trained people locally, so we either wait a long time or invest heavily in training someone up ourselves.","Yes. The candidates who apply typically need significant upskilling before they're productive, which stretches our team and delays projects.","We've found it very hard. The specific technical skills for this role aren't common in our area, and demand for them across the sector makes competition fierce.","Yes — we consistently see a shortage of applicants with the right credential. General experience is easy to find; this particular skill set is not.","Hard, yes. The main issue is that training for this work isn't widely available locally, so the supply of qualified candidates hasn't kept up with our need.","Yes. We've had openings sit unfilled because the applicants lacked the formal training, and bringing someone fully up to speed in-house takes time we often don't have.","It's been an ongoing struggle. Without a steady stream of trained graduates, we're left choosing between long vacancies and costly from-scratch training.","Yes. The skills gap is real — applicants are enthusiastic but under-trained, and the recognized credential this program offers is exactly what's missing.","We've had real difficulty. The specialized nature of the role means most applicants don't meet the technical bar, and the qualified few are quickly snapped up.","Yes, very much so. Our region doesn't produce enough people with this training, so we frequently reopen the same postings without finding the right fit.","Hard to fill, yes. The core problem is a lack of candidates with the specific hands-on competencies the job needs, not a lack of applicants overall.","Yes. We've relied on recruiters and still struggled, because the underlying issue is a shortage of people with the actual skills this training provides.","It's been genuinely difficult. The work requires a particular technical foundation that few local applicants have, and building it in-house is slow and expensive.","Yes. We often get applicants who are a near-miss — right attitude, wrong skill set — and a program that delivers the exact credential would change that for us.","Very hard. The talent shortage in this area is well known in our industry, and we feel it directly every time one of these roles opens up.","Yes. Finding someone job-ready has meant long searches, and more than once we've had to scale back work because the right skills weren't available locally.","It's been a consistent pain point. The specific training required isn't common, so qualified candidates are scarce and in high demand.","Yes. Most applicants need substantial training before they can do the work independently, which puts real strain on our experienced staff.","Hard, and getting harder. As demand in our sector grows, the small pool of properly trained people gets stretched thinner.","Yes. The challenge has always been the skills gap — plenty of people want the work, but few arrive with the certification and practical ability it takes.","We've found these roles very hard to staff. A local program turning out job-ready graduates would directly solve a problem we've wrestled with for years.","Yes. Repeated searches, long vacancies, and heavy reliance on training new hires from scratch — all because qualified, credentialed candidates are so hard to find here."]},"futureOpenings":{"question":"How many openings do you anticipate for these roles over the next 6 to 12 months? (Official Q5: Do you foresee future openings in these positions? If yes, how many job openings do you anticipate over the next 6 to 12 months?) {n} is the number the employer enters; show the number itself in the sentence. Count shown only when >1 where it reads naturally.","slot":"{n}","positive":["Yes. We anticipate around {n} openings in these roles over the next 6 to 12 months.","Yes — we expect roughly {n} additional openings for these positions in the coming 6 to 12 months.","We foresee about {n} openings over the next 6 to 12 months as our workload grows.","Yes. Over the next 6 to 12 months we'd estimate {n} further openings in these roles.","We expect to open approximately {n} of these positions within the next year.","Yes — our best estimate is {n} openings in these roles over the next 6 to 12 months.","We anticipate {n} or so openings for these positions in the coming months as we continue to grow.","Yes. Looking ahead 6 to 12 months, we expect around {n} openings in these roles.","We foresee roughly {n} additional positions opening over the next year.","Yes — we'd anticipate about {n} openings in these roles over the next 6 to 12 months, on top of our current needs.","We expect demand for these skills to continue, with an estimated {n} openings in the next 6 to 12 months.","Yes. Based on our pipeline, we anticipate around {n} openings in these positions over the coming year.","We'd estimate {n} further openings for these roles over the next 6 to 12 months.","Yes — as projects ramp up, we expect approximately {n} more openings in these positions within the year.","We anticipate about {n} openings over the next 6 to 12 months, and likely more beyond that.","Yes. Our forecast points to roughly {n} openings in these roles over the next 6 to 12 months.","We expect around {n} additional openings for these positions as our business grows this year.","Yes — realistically we'd expect {n} openings in these roles over the next 6 to 12 months.","We see steady demand ahead and anticipate about {n} openings in these positions within the year.","Yes. We'd put the number at around {n} openings over the next 6 to 12 months."],"negative":["We don't anticipate specific openings in the next 6 to 12 months, but these skills remain central to our work and we expect to be hiring for them again before long.","No firm openings forecast for the coming 6 to 12 months, though we see ongoing demand for these skills and would welcome qualified graduates as our needs develop.","We can't point to a specific number yet, but roles like these turn over and expand for us over time, and we expect future opportunities.","No additional openings projected right now, but we're optimistic about growth and anticipate needing these skills down the line.","We don't have a forecast number for the next year, but the demand for these skills in our sector is steady and we expect to hire again as we grow.","Nothing firmly projected for the coming months, though we'd expect openings to arise as projects and workload pick up.","No specific future openings to report yet, but these are skills we return to regularly, and a local pool of graduates would be valuable as our needs evolve.","We're not forecasting set numbers for the next 6 to 12 months, but we anticipate continued demand and would welcome qualified graduates when roles open.","No concrete projection at this stage, but given where our sector is heading we expect openings in these roles before long.","We can't commit to a number for the coming year, but we see these skills staying in demand and expect to be recruiting for them in future."]},"practicum":{"question":"If a practicum were part of the training, could you host a student? If so, how many? (Official Q6: As a part of training, if a practicum was required, are you providing a practicum space? If so, how many placements?) NOTE: this is purely hypothetical — the program does NOT include a placement — so answers are about willingness, not a commitment. 'positive' uses {n} = number of placements (count shown only when >1 where natural). 'negative' answers are an honest 'not right now' that still reads supportive and real.","slot":"{n}","positive":["Yes, in principle we could host {n}. We'd see a practicum as a great way to give students real experience and get to know potential future hires.","We'd be open to hosting {n}. Hands-on placements are exactly how people learn this work, and we'd be glad to help.","Yes — we could likely make room for {n}, subject to the usual approvals. We think practical experience is invaluable for new entrants.","In principle, yes, around {n}. We'd want to give students meaningful project work rather than just observation.","We'd happily consider {n}. Mentoring newcomers is something our team genuinely enjoys and values.","Yes, we could probably accommodate {n} if the timing worked. A practicum is a natural pipeline into the roles we hire for.","We'd be willing to take {n}. Real worksite experience makes a big difference in how job-ready graduates are.","Yes — potentially {n}, pending management sign-off. We see placements as an investment in the local talent pool.","We could look at hosting {n}. Pairing a student with an experienced team member is how we'd approach it.","In theory, yes, {n}. We'd treat it as a two-way opportunity — experience for them, a look at fresh talent for us.","We'd be glad to host {n}. Giving people a first real foothold in the industry matters to us.","Yes, {n} would be realistic for us. We'd make sure they got proper supervision and genuine work to do.","We'd consider {n}, workload permitting. A practicum is often where we spot people we'd want to hire.","Potentially {n}. We believe strongly in hands-on training and would want to support it where we can.","Yes — we could offer {n} and provide the mentorship and equipment to make it worthwhile.","We'd aim to host {n} if we could. Practical placements are how this trade has always passed on its skills.","In principle {n}, and we'd want to make it a real learning experience, not just job-shadowing.","Yes, {n} sounds doable for us. Supporting the next generation of skilled workers is something we care about.","We'd be open to {n}, subject to approval. We've seen first-hand how much placements accelerate someone's readiness.","We could likely host {n}. We'd see it as giving back to the local industry we rely on.","Yes — around {n}. We'd pair each student with a senior staff member so they get proper guidance.","We'd welcome {n} if the opportunity arose. Real experience on live projects is the best teacher in our field.","In theory we could take {n}, and we'd be glad to — it's exactly the kind of community support we believe in.","Yes, {n} is something we could work toward. We'd want to make sure the experience genuinely helps them grow.","We'd consider hosting {n}, and we'd treat it seriously — meaningful tasks, real feedback, proper supervision.","Potentially {n}, depending on project load. We think practicums are one of the best ways into this industry.","Yes — we could make space for {n} and would see it as part of building a stronger local workforce.","We'd be happy to explore {n}. Giving students a real taste of the work benefits everyone in the long run.","In principle, {n}. We'd want them learning from our most experienced people and leaving genuinely more employable.","Yes, {n} feels realistic. We'd approach it as a proper mentorship, not just a box to tick.","We could host {n} if asked. Practical placements are how we'd most like to support training like this.","We'd aim for {n}, and we'd make the experience count — real responsibilities and the support to handle them."],"negative":["Not at the moment, but we think practicums are a great idea and would want to revisit it as our capacity allows.","We're not set up to host a placement right now, but we'd genuinely like to in the future — hands-on experience is so valuable.","Not currently, though we'd be glad to consider it down the road. We really value this kind of practical training.","We can't offer a placement at this time, but we fully support the idea and hope to be in a position to help later.","Not right now — our team is stretched — but we think placements are exactly what new entrants need and we'd like to contribute eventually.","We're unable to host just now, but we'd welcome the chance as things settle. Real experience makes all the difference.","Not at present, but this is something we'd love to do once we have the capacity to mentor properly.","We can't commit to a space currently, though we strongly believe in work-integrated learning and would revisit it.","Not this time, but we'd keep the door open — supporting students into the trade is something we care about.","We're not able to right now, but we think it's a worthwhile idea and would consider it in future intakes.","Not currently, but we'd genuinely like to help with placements once our workload allows.","We can't host at the moment, but we see the value clearly and hope to take part when we're able.","Not right now, though we'd happily look at it later — giving people real experience is how this industry grows.","We're not in a position to this time, but we'd encourage it and would love to be involved down the line.","Not at this stage, but we think practicums are important and would aim to offer one in the future.","We can't just now, but we'd welcome a conversation about it later — we really do see the benefit.","Not currently, but we admire the idea and would like to support placements once we have the bandwidth.","We're unable to host at present, though we'd be keen to as soon as our capacity allows.","Not this intake, but we'd genuinely like to help with hands-on training in the future.","We can't offer a space right now, but we fully back the concept and hope to contribute before long.","Not at the moment, but supporting new talent through placements is something we'd want to do when we can.","We're not able to this time around, but we think it's a great initiative and would revisit it gladly."]},"comments":{"question":"Anything else you'd like to add? (Official Q7: Do you wish to add any further comments?) Optional. Strong answers reinforce that this is a real local skills shortage the training would address, and that the employer is a genuine, invested community partner. Positive and aligned with what CWRG wants to hear.","pool":["The skills shortage in our sector has been one of our biggest constraints on growth, and training like this is exactly what's needed to address it locally.","We fully support this application. A steady supply of qualified local graduates would make a real difference to businesses like ours.","We've seen first-hand how hard it is to find people with these specific skills, and a dedicated training program would directly help close that gap.","This training targets a genuine need in our industry. We'd gladly prioritize interviewing its graduates for our openings.","Programs like this are how our sector sustains itself. We're glad to see local training that produces job-ready people.","We believe strongly in building talent close to home, and this training would strengthen the whole local workforce, not just our own hiring.","The lack of trained candidates has held our region back, and we see this program as a practical, much-needed response to that.","We'd welcome graduates of this program and are happy to support it in any way we can. The need is real and ongoing.","Training like this keeps skilled work in our community rather than forcing employers to look elsewhere. We're fully behind it.","We've had to turn down work for lack of qualified staff, so a local pipeline of trained graduates would have a direct, positive impact.","This is exactly the kind of initiative our industry needs. We're pleased to lend our support to the application.","A credentialed, job-ready cohort would be a genuine asset to employers across our sector, and we're glad to see it being developed here.","We see this training as an investment in the long-term health of our local economy, and we support it wholeheartedly.","The demand for these skills isn't going away, and homegrown training is the most sustainable way to meet it. We're happy to help.","We'd be glad to stay involved as this program develops — whether through hiring, mentorship, or feedback on what employers need.","This kind of training makes our region a more attractive place to do business, and we're pleased to support it.","We strongly endorse this application. Local, practical, credential-based training is precisely what our sector has been missing.","Graduates of programs like this tend to be noticeably more job-ready, and that readiness is exactly what we struggle to find.","We appreciate efforts to build local skills capacity and would welcome the chance to hire from this program's graduates.","The gap between the skills we need and the candidates available is real, and this training is a direct, sensible way to narrow it.","We're glad to support training that keeps opportunity and talent within our own communities.","This program addresses a shortage we feel every time we try to hire, and we'd be pleased to see it succeed.","We'd happily serve as a reference for the value of this training — the need for it in our sector is clear and pressing.","Supporting this application was an easy decision. A stronger local talent pool benefits everyone in our industry.","We see real, lasting demand for these skills, and locally delivered training is the best way to meet it. We're fully supportive.","Initiatives like this help smaller employers compete for talent, and we're grateful to see investment in local skills.","We back this program and would encourage its graduates to apply with us. The industry genuinely needs more trained people.","This training reflects exactly where our sector is heading, and we're glad the region is building capacity to keep up.","We'd welcome a continued relationship with this program — the alignment between what it teaches and what we need is strong.","The practical focus of this training is what sets it apart, and it's precisely that hands-on readiness our workplaces require.","We fully support this effort to grow local skills, and we believe it will pay off for employers, graduates, and the community alike.","This is a worthwhile and timely initiative. We're pleased to support it and look forward to the talent it will produce."]}},"logo":"data:image/png;base64,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","logoW":750,"logoH":205}</script>
+<script>
+
+(function () {
+  "use strict";
+  var CFG = JSON.parse(document.getElementById("program-config").textContent);
+  var STORAGE_KEY = "cwrg_" + location.pathname;
+
+  var ICON = {
+    good: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3 7-7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    warn: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L15 14H1L8 1.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.6" r=".9" fill="currentColor"/></svg>'
+  };
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+  function el(id){ return document.getElementById(id); }
+  function words(s){ return (s.trim().match(/\S+/g)||[]).length; }
+  // pick up to n distinct random items from arr (order randomized)
+  function pickN(arr, n){
+    var a = (arr||[]).slice();
+    for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a.slice(0, Math.max(0, n));
+  }
+
+  /* ---- top subtitle ---- */
+  el("topSub").textContent = CFG.programTitle + " · " + CFG.college;
+
+  /* ---- intro ---- */
+  var intro = CFG.intro || {};
+  el("intro").innerHTML =
+    '<div class="intro-top">' +
+      (intro.badge ? '<span class="intro-badge">' + esc(intro.badge) + '</span>' : '') +
+      (intro.timeEstimate ? '<span class="intro-time">\u23f1\ufe0f ' + esc(intro.timeEstimate) + '</span>' : '') +
+    '</div>' +
+    (intro.heading ? '<h2>' + esc(intro.heading) + '</h2>' : '') +
+    (intro.builtByHtml ? '<p class="collab">' + intro.builtByHtml + '</p>' : '') +
+    (intro.goalHtml ? '<p class="goal">' + intro.goalHtml + '</p>' : '') +
+    '<div class="note reassure"><span class="pill">No hiring commitment</span><div>' + (CFG.notCommittedNote||'') + '</div></div>' +
+    '<dl class="baked">' +
+      '<dt>Program</dt><dd>' + esc(CFG.programTitle) + '</dd>' +
+      '<dt>Credential</dt><dd>' + esc(CFG.credential) + '</dd>' +
+      '<dt>In partnership with</dt><dd>' + esc(CFG.college) + '</dd>' +
+    '</dl>' +
+    '<div class="progress-wrap"><div class="progress-label"><span>Your progress</span><span id="progressPct">0%</span></div>' +
+    '<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div></div>';
+
+  el("footnote").innerHTML = CFG.footerNote || '';
+
+  /* ---- build fields ---- */
+  var form = el("form");
+  var sec = document.createElement("div"); sec.className = "section";
+  sec.innerHTML = '<div class="section-head"><h3>A few questions about your employment needs</h3></div>';
+  var body = document.createElement("div"); body.className = "section-body";
+  sec.appendChild(body); form.appendChild(sec);
+
+  var qIndex = 0;
+  CFG.questions.forEach(function(q){
+    qIndex++;
+    var f = document.createElement("div");
+    f.className = "field"; f.dataset.qid = q.id; f.dataset.type = q.type;
+    if (q.optional) f.dataset.optional = "1";
+
+    var optLabel = q.optional ? ' <span class="opt">(optional)</span>' : ' <span class="req">*</span>';
+    var head = '<label class="q" for="' + q.id + '"><span class="num">' + qIndex + '</span>' + esc(q.label) + optLabel + '</label>' +
+               (q.hint ? '<div class="hint">' + esc(q.hint) + '</div>' : '');
+
+    var hasPool = !!((q.suggestions && q.suggestions.length) ||
+      (CFG.phrasings && CFG.phrasings[q.id] && CFG.phrasings[q.id].pool && CFG.phrasings[q.id].pool.length));
+    var control = "";
+    if (q.type === "textarea") {
+      var ph = q.placeholder != null
+        ? q.placeholder
+        : (hasPool
+            ? "Write your answer here — or tap a suggested answer below to start from, then edit it to fit."
+            : "Write your answer here…");
+      control = '<textarea id="' + q.id + '" rows="3" placeholder="' + esc(ph) + '"></textarea>';
+    } else if (q.type === "text") {
+      var phT = q.placeholder != null ? q.placeholder : "Write your answer here…";
+      control = '<input type="text" id="' + q.id + '" placeholder="' + esc(phT) + '">';
+    } else if (q.type === "number") {
+      control = numberControl(q);
+    } else if (q.type === "roles") {
+      control = rolesControl(q);
+    } else if (q.type === "rolegrid") {
+      control = roleGridControl(q);
+    } else if (q.type === "sourcegrid") {
+      control = sourceGridControl(q);
+    } else if (q.type === "countanswer") {
+      control = countAnswerControl(q);
+    } else if (q.type === "practicum") {
+      control = practicumControl(q);
+    }
+
+    // suggestion pool: inline q.suggestions, OR a pool in phrasings[q.id].pool (e.g. Q4).
+    // Show at most 2, picked at random at page load. Only for free-text questions
+    // (textarea/text) — grid/number/practicum types generate their own answers.
+    var canSuggest = (q.type === "textarea" || q.type === "text");
+    var pool = !canSuggest ? [] : ((q.suggestions && q.suggestions.length)
+      ? q.suggestions
+      : ((CFG.phrasings && CFG.phrasings[q.id] && CFG.phrasings[q.id].pool) || []));
+    var suggests = "";
+    if (pool.length) {
+      // the 2 buttons are rendered into .suggests-list by JS (so they can rotate);
+      // "Show different examples" re-rolls 2 fresh picks when the pool has more than 2.
+      suggests = '<div class="suggests" data-suggest-for="' + q.id + '">' +
+        '<div class="suggests-label">Suggested answers — click to use, then add your own detail</div>' +
+        '<div class="suggests-list"></div>' +
+        (pool.length > 2 ? '<button type="button" class="rg-regen suggest-more" data-suggest-more="' + q.id + '">↺ Show different examples</button>' : '') +
+        '</div>';
+    }
+
+    f.innerHTML = head + control + suggests + '<div class="feedback"></div>';
+    body.appendChild(f);
+  });
+
+  /* ---- business/contact section (required: business name, address, email; optional: name, phone, date) ---- */
+  var cSec = document.createElement("div"); cSec.className = "section";
+  cSec.innerHTML = '<div class="section-head"><h3>Your business &amp; contact details</h3></div>' +
+    '<div class="section-body">' +
+      field2("businessName", "Business name", "organization", "e.g. Ozz Electric Ltd.") +
+      '<div class="field" data-contact="1" data-min="5"><label class="q" for="businessAddress">Business address and/or website <span class="req">*</span></label>' +
+        '<div class="hint">Both your full address and website is best, but a website on its own is fine too.</div>' +
+        '<input type="text" id="businessAddress" placeholder="e.g. 101 – 1680 Broadway St, Port Coquitlam, BC · www.example.com"><div class="feedback"></div></div>' +
+      '<div class="row2">' +
+        '<div class="field" data-contact="1" data-kind="email"><label class="q" for="repEmail">Representative email <span class="req">*</span></label>' +
+          '<div class="hint">Where the charity can reach you if they have a question.</div>' +
+          '<input type="email" id="repEmail" autocomplete="email" placeholder="name@company.com"><div class="feedback"></div></div>' +
+        field2opt("repName", "Representative name & title", "name", "e.g. Cara Ramage – HR Manager") +
+      '</div>' +
+      '<div class="row2">' +
+        '<div class="field" data-contact="1" data-optional="1" data-kind="tel"><label class="q" for="repPhone">Representative phone <span class="opt">(optional)</span></label><input type="tel" id="repPhone" autocomplete="tel" placeholder="604-555-1234"><div class="feedback"></div></div>' +
+        '<div class="field" data-contact="1" data-optional="1"><label class="q" for="formDate">Date</label><input type="date" id="formDate"><div class="feedback"></div></div>' +
+      '</div>' +
+    '</div>';
+  form.appendChild(cSec);
+
+  /* ---- certification (at the very end, after the business details it refers to) ---- */
+  var certSec = document.createElement("div"); certSec.className = "section";
+  var certBody = document.createElement("div"); certBody.className = "section-body";
+  var cert = document.createElement("div"); cert.className = "field";
+  cert.innerHTML = '<div class="certify"><input type="checkbox" id="certify"><label for="certify" style="font-weight:500;cursor:pointer;">' +
+    'I confirm I’m authorized to submit this on behalf of the business above, and that the information is correct to the best of my knowledge. <span class="req">*</span></label></div>';
+  certBody.appendChild(cert); certSec.appendChild(certBody);
+  form.appendChild(certSec);
+
+  function field2(id, label, ac, ph, min) {
+    return '<div class="field" data-contact="1"' + (min?' data-min="'+min+'"':'') + '>' +
+      '<label class="q" for="' + id + '">' + esc(label) + ' <span class="req">*</span></label>' +
+      '<input type="text" id="' + id + '" autocomplete="' + ac + '" placeholder="' + esc(ph) + '"><div class="feedback"></div></div>';
+  }
+  function field2opt(id, label, ac, ph) {
+    return '<div class="field" data-contact="1" data-optional="1">' +
+      '<label class="q" for="' + id + '">' + esc(label) + ' <span class="opt">(optional)</span></label>' +
+      '<input type="text" id="' + id + '" autocomplete="' + ac + '" placeholder="' + esc(ph) + '"><div class="feedback"></div></div>';
+  }
+  function numberControl(q){
+    var min = q.min!=null?q.min:0, max = q.max!=null?q.max:99, step = q.step||1;
+    return '<div class="stepper" data-min="'+min+'" data-max="'+max+'" data-step="'+step+'">' +
+      '<button type="button" data-step-dir="-1" aria-label="decrease">−</button>' +
+      '<input type="text" inputmode="numeric" id="'+q.id+'" value="0">' +
+      '<button type="button" data-step-dir="1" aria-label="increase">+</button>' +
+      '</div>' + (q.unit?'<span class="stepper-unit">'+esc(q.unit)+'</span>':'');
+  }
+  // Role + counter grid: preset roles each with a stepper, plus blank custom rows,
+  // a "no openings" toggle, and a live auto-generated (editable) Q2 answer box.
+  function roleGridControl(q){
+    var presets = CFG.roles || [];
+    var CUSTOM_ROWS = 3;
+    function row(name, i, isCustom){
+      var rid = q.id + "_r" + i;
+      return '<div class="rg-row' + (isCustom?' rg-custom':'') + '">' +
+        (isCustom
+          ? '<input type="text" class="rg-name" id="'+rid+'_name" placeholder="Add a role…" data-rg="'+q.id+'">'
+          : '<span class="rg-name rg-fixed" id="'+rid+'_name" data-role-name="'+esc(name)+'">'+esc(name)+'</span>') +
+        '<div class="stepper rg-step" data-min="0" data-max="99" data-step="1" data-rg="'+q.id+'">' +
+          '<button type="button" data-step-dir="-1" aria-label="decrease">−</button>' +
+          '<input type="text" inputmode="numeric" id="'+rid+'_n" value="0" aria-label="number of openings">' +
+          '<button type="button" data-step-dir="1" aria-label="increase">+</button>' +
+        '</div></div>';
+    }
+    var out = '<div class="rolegrid" id="'+q.id+'" data-rolegrid="'+q.id+'">';
+    out += '<div class="rg-rows">';
+    presets.forEach(function(r,i){ out += row(r, i, false); });
+    for (var c=0;c<CUSTOM_ROWS;c++){ out += row("", presets.length + c, true); }
+    out += '</div>';
+    // "no openings right now" toggle
+    out += '<label class="rg-none"><input type="checkbox" id="'+q.id+'_none" data-rg="'+q.id+'">' +
+           '<span>No vacancies right now — but note our interest for the future</span></label>';
+    // live, editable generated answer
+    out += '<div class="rg-answer-wrap">' +
+      '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits, and feel free to edit or add more detail</span></div>' +
+      '<textarea id="'+q.id+'_answer" class="rg-answer" rows="3" data-rg-answer="'+q.id+'" placeholder="Set a number beside a role above, or tick “No vacancies right now”, and we’ll draft your answer here."></textarea>' +
+      '<button type="button" class="rg-regen" data-rg-regen="'+q.id+'" hidden>↺ Rewrite it differently</button>' +
+      '</div>';
+    out += '</div>';
+    return out;
+  }
+  // Source checklist (Question 3): common sources to tick + custom rows + auto-generated answer.
+  // Sources come from this question's phrasings entry (CFG.phrasings[q.id].sources).
+  function sourceGridControl(q){
+    var pool = (CFG.phrasings && CFG.phrasings[q.id]) || {};
+    var sources = pool.sources || [];
+    var CUSTOM = 3;
+    var out = '<div class="sourcegrid" id="'+q.id+'" data-sourcegrid="'+q.id+'">';
+    out += '<div class="src-list">';
+    sources.forEach(function(s, i){
+      out += '<label class="src-item"><input type="checkbox" class="src-check" value="'+esc(s)+'" data-sg="'+q.id+'"><span>'+esc(s)+'</span></label>';
+    });
+    out += '</div>';
+    out += '<div class="src-custom-rows">';
+    for (var c=0;c<CUSTOM;c++){
+      out += '<input type="text" class="src-custom" id="'+q.id+'_c'+c+'" placeholder="Add another source…" data-sg="'+q.id+'">';
+    }
+    out += '</div>';
+    out += '<div class="rg-answer-wrap">' +
+      '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits, and feel free to edit or add more detail</span></div>' +
+      '<textarea id="'+q.id+'_answer" class="rg-answer" rows="2" data-sg-answer="'+q.id+'" placeholder="Tick the places you post, or add your own, and we’ll draft your answer here."></textarea>' +
+      '<button type="button" class="rg-regen" data-sg-regen="'+q.id+'" hidden>↺ Rewrite it differently</button>' +
+      '</div>';
+    out += '</div>';
+    return out;
+  }
+  // Single count + auto-generated answer (Question 5): one stepper, a "none" toggle,
+  // and a live editable answer from this question's phrasing pool (slot {n}).
+  function countAnswerControl(q){
+    var max = q.max!=null?q.max:50, step = q.step||1;
+    var unit = q.unit || "anticipated openings";
+    var out = '<div class="countanswer" id="'+q.id+'" data-countanswer="'+q.id+'">';
+    out += '<div class="ca-row">' +
+      '<div class="stepper ca-step" data-min="0" data-max="'+max+'" data-step="'+step+'">' +
+        '<button type="button" data-step-dir="-1" aria-label="decrease">−</button>' +
+        '<input type="text" inputmode="numeric" id="'+q.id+'_n" value="0" aria-label="'+esc(unit)+'">' +
+        '<button type="button" data-step-dir="1" aria-label="increase">+</button>' +
+      '</div><span class="stepper-unit">'+esc(unit)+'</span></div>';
+    out += '<label class="rg-none"><input type="checkbox" id="'+q.id+'_none" data-ca="'+q.id+'">' +
+           '<span>No specific number yet — but note our future interest</span></label>';
+    out += '<div class="rg-answer-wrap">' +
+      '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits, and feel free to edit or add more detail</span></div>' +
+      '<textarea id="'+q.id+'_answer" class="rg-answer" rows="2" data-ca-answer="'+q.id+'" placeholder="Set a number above, or tick “No specific number yet”, and we’ll draft your answer here."></textarea>' +
+      '<button type="button" class="rg-regen" data-ca-regen="'+q.id+'" hidden>↺ Rewrite it differently</button>' +
+      '</div>';
+    out += '</div>';
+    return out;
+  }
+  function rolesControl(q){
+    var hasPreset = (CFG.roles||[]).length > 0;
+    var out = '<div class="roles-group" data-roles-group="'+q.id+'">';
+    if (hasPreset) {
+      out += '<div class="roles" id="'+q.id+'" data-roles="1">';
+      (CFG.roles||[]).forEach(function(r){
+        out += '<label class="role"><input type="checkbox" value="'+esc(r)+'"><span>'+esc(r)+'</span></label>';
+      });
+      out += '</div>';
+    } else {
+      // no preset roles configured — still need the container for querying
+      out += '<div class="roles" id="'+q.id+'" data-roles="1" hidden></div>';
+    }
+    // free-text "other roles" — one per line or comma-separated
+    out += '<div class="roles-other">' +
+      '<label class="roles-other-label" for="'+q.id+'_other">' +
+        (hasPreset ? 'Other roles not listed above' : 'List the roles graduates could fill') +
+        ' <span class="opt">(one per line, or separated by commas)</span></label>' +
+      '<textarea id="'+q.id+'_other" data-roles-other="'+q.id+'" rows="2" placeholder="e.g. Survey Assistant, Design Coordinator"></textarea>' +
+      '</div>';
+    out += '</div>';
+    return out;
+  }
+  // collect checked preset roles + any typed in the "other" box, de-duplicated, order preserved
+  function collectRoles(qid){
+    var list = [];
+    document.querySelectorAll('#'+qid+' input:checked').forEach(function(cb){ list.push(cb.value); });
+    var other = el(qid+"_other");
+    if (other && other.value.trim()){
+      other.value.split(/[\n,;]+/).forEach(function(part){
+        var r = part.trim();
+        if (r && list.indexOf(r) === -1) list.push(r);
+      });
+    }
+    return list;
+  }
+  function practicumControl(q){
+    return '<div data-practicum="1" id="'+q.id+'">' +
+      '<div class="yesno">' +
+        '<label data-val="yes"><input type="radio" name="'+q.id+'_yn" value="yes">Yes, we could host</label>' +
+        '<label data-val="no"><input type="radio" name="'+q.id+'_yn" value="no">No, not at this time</label>' +
+      '</div>' +
+      '<div class="practicum-detail" hidden>' +
+        '<div class="ca-row">' +
+          '<div class="stepper pr-step" data-min="1" data-max="20" data-step="1">' +
+            '<button type="button" data-step-dir="-1" aria-label="decrease">−</button>' +
+            '<input type="text" inputmode="numeric" id="'+q.id+'_count" value="1" aria-label="placements">' +
+            '<button type="button" data-step-dir="1" aria-label="increase">+</button>' +
+          '</div><span class="stepper-unit">placement(s)</span>' +
+        '</div>' +
+      '</div>' +
+      // auto-generated, editable answer (appears once Yes/No is chosen)
+      '<div class="rg-answer-wrap" data-pr-answerwrap="'+q.id+'" hidden>' +
+        '<div class="rg-answer-label">✓ We drafted this answer for you <span class="opt">— please check it fits, and feel free to edit or add more detail</span></div>' +
+        '<textarea id="'+q.id+'_answer" class="rg-answer" rows="2" data-pr-answer="'+q.id+'" placeholder="Choose Yes or No above and we’ll draft your answer here."></textarea>' +
+        '<button type="button" class="rg-regen" data-pr-regen="'+q.id+'" hidden>↺ Rewrite it differently</button>' +
+      '</div>' +
+      '</div>';
+  }
+
+  /* default date */
+  el("formDate").value = new Date().toISOString().slice(0,10);
+
+  /* ================= interactions ================= */
+  var touched = {};  // tracks which number/roles/practicum questions the employer has engaged
+  var initializing = true;  // true only during the initial render/restore; user edits clear "restored"
+  // after a user interaction, a saved-wording box should regenerate on the next refresh
+  function clearRestored(qid){ if (initializing) return; var b=el(qid+"_answer"); if(b) delete b.dataset.restored; }
+  // grow a textarea to fit its content so the whole drafted answer is visible
+  function autogrow(ta){ if(!ta) return; ta.style.height="auto"; ta.style.height=(ta.scrollHeight+2)+"px"; }
+  // add ArrowUp/ArrowDown keyboard support to a stepper's number input
+  function wireStepperKeys(input, min, max, step, onChange){
+    input.addEventListener("keydown", function(e){
+      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      e.preventDefault();
+      var v = parseInt(input.value,10); if(isNaN(v)) v=min;
+      v += (e.key==="ArrowUp"?step:-step);
+      v = Math.max(min, Math.min(max, v));
+      input.value = v;
+      if (onChange) onChange();
+    });
+  }
+
+  /* ---- suggestions: 2 shown, rotatable through the pool ---- */
+  function suggestPool(qid){
+    var q = null; CFG.questions.forEach(function(x){ if(x.id===qid) q=x; });
+    if (!q) return [];
+    return (q.suggestions && q.suggestions.length) ? q.suggestions
+      : ((CFG.phrasings && CFG.phrasings[qid] && CFG.phrasings[qid].pool) || []);
+  }
+  // render 2 (new random) suggestion buttons into a question's list
+  function renderSuggestions(qid){
+    var wrap = document.querySelector('[data-suggest-for="'+qid+'"]');
+    if (!wrap) return;
+    var listEl = wrap.querySelector('.suggests-list');
+    var picks = pickN(suggestPool(qid), 2);
+    listEl.innerHTML = "";
+    picks.forEach(function(s){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "suggest";
+      b.textContent = s;            // textContent avoids any escaping issues
+      b._text = s;                  // keep the raw text for insertion
+      listEl.appendChild(b);
+    });
+  }
+  document.querySelectorAll('[data-suggest-for]').forEach(function(wrap){
+    renderSuggestions(wrap.getAttribute('data-suggest-for'));
+  });
+  // delegated click: insert a suggestion (buttons are re-created on rotate)
+  document.getElementById("form").addEventListener("click", function(ev){
+    var btn = ev.target.closest(".suggest");
+    if (!btn) return;
+    var wrap = btn.closest("[data-suggest-for]");
+    var qid = wrap ? wrap.getAttribute("data-suggest-for") : null;
+    if (!qid) return;
+    var t = el(qid), text = btn._text != null ? btn._text : btn.textContent;
+    var existing = (t.value||"").trim();
+    // Only confirm before overwriting text the employer typed/edited themselves.
+    // Swapping between suggestions (box still holds an unedited inserted one) is instant.
+    if (existing && t.dataset.fromSuggestion !== "1") {
+      if (!window.confirm("Replace what you've written with this example? You can edit it afterwards.")) return;
+    }
+    t.value = text;
+    t.dispatchEvent(new Event("input", {bubbles:true}));   // programmatic (isTrusted=false)
+    t.dataset.fromSuggestion = "1";                        // mark AFTER dispatch so the listener's clear doesn't win
+    t.focus();
+    try { t.setSelectionRange(t.value.length, t.value.length); } catch(e){}
+  });
+  // "Show different examples" — re-roll 2 fresh picks from the pool
+  document.querySelectorAll("[data-suggest-more]").forEach(function(btn){
+    btn.addEventListener("click", function(){ renderSuggestions(btn.getAttribute("data-suggest-more")); });
+  });
+  // steppers (standalone number & practicum) — clamp on every input, mark touched on interaction.
+  // Role-grid steppers (.rg-step) are handled by their own block below.
+  document.querySelectorAll(".stepper").forEach(function(st){
+    if (st.classList.contains("rg-step") || st.classList.contains("ca-step") || st.classList.contains("pr-step")) return;
+    var input = st.querySelector("input");
+    var min = +st.dataset.min, max = +st.dataset.max, step = +st.dataset.step;
+    var qid = input.id.replace(/_count$/, "");
+    function clamp(v){ v = parseInt(v,10); if(isNaN(v)) v=min; return Math.max(min, Math.min(max, v)); }
+    st.querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click", function(){ touched[qid]=true; input.value = clamp((+input.value||0) + step*(+b.dataset.stepDir)); input.dispatchEvent(new Event("input",{bubbles:true})); });
+    });
+    input.addEventListener("input", function(){ touched[qid]=true; recompute(); });
+    input.addEventListener("blur", function(){ input.value = clamp(input.value); recompute(); });
+    input.addEventListener("keydown", function(e){
+      if (e.key === "ArrowUp"){ e.preventDefault(); touched[qid]=true; input.value = clamp((+input.value||0)+step); input.dispatchEvent(new Event("input",{bubbles:true})); }
+      if (e.key === "ArrowDown"){ e.preventDefault(); touched[qid]=true; input.value = clamp((+input.value||0)-step); input.dispatchEvent(new Event("input",{bubbles:true})); }
+    });
+  });
+
+  /* ---- role-grid (Question 2): steppers + custom rows + "none" toggle + auto-answer ---- */
+  function rgClamp(v){ v = parseInt(v,10); if(isNaN(v)||v<0) v=0; return Math.min(99, v); }
+  // gather [{name, count}] for a role-grid question (only rows with a name and count>0)
+  function rgRoles(qid){
+    var list = [];
+    document.querySelectorAll('#'+qid+' .rg-row').forEach(function(rowEl){
+      var nameEl = rowEl.querySelector('.rg-name');
+      var name = nameEl.classList.contains('rg-fixed') ? nameEl.getAttribute('data-role-name') : (nameEl.value||'').trim();
+      var n = rgClamp(rowEl.querySelector('.rg-step input').value);
+      if (name && n > 0) list.push({ name: name, count: n });
+    });
+    return list;
+  }
+  function rgNone(qid){ var c = el(qid+'_none'); return !!(c && c.checked); }
+  // pluralize a role name simply for counts > 1
+  function pluralize(name){
+    if (/s$/i.test(name)) return name;                 // already plural-ish
+    if (/(ch|sh|x|z)$/i.test(name)) return name + "es";
+    if (/[^aeiou]y$/i.test(name)) return name.replace(/y$/i, "ies");
+    return name + "s";
+  }
+  // natural-prose list: "2 Estimators, a BIM Designer, and 3 CAD Technicians"
+  function rolesPhrase(list){
+    var parts = list.map(function(r){
+      if (r.count > 1) return r.count + " " + pluralize(r.name);
+      var article = /^[aeiou]/i.test(r.name) ? "an " : "a ";
+      return article + r.name;
+    });
+    if (parts.length === 1) return parts[0];
+    if (parts.length === 2) return parts[0] + " and " + parts[1];
+    return parts.slice(0, -1).join(", ") + ", and " + parts[parts.length - 1];
+  }
+  function pick(arr){ return arr && arr.length ? arr[Math.floor(Math.random()*arr.length)] : ""; }
+  // generate the Q2 answer text for current state, from this question's phrasing pool
+  function rgGenerate(qid){
+    var pool = (CFG.phrasings && CFG.phrasings[qid]) || {};
+    var list = rgRoles(qid);
+    if (list.length > 0){
+      var tmpl = pick(pool.positive) || "Yes. Graduates could fill {roles}.";
+      return tmpl.replace(/\{roles\}/g, rolesPhrase(list));
+    }
+    if (rgNone(qid)){
+      return pick(pool.negative) || "No openings right now, but we'd welcome qualified graduates as we grow.";
+    }
+    return "";
+  }
+  // write a fresh generated answer into the box (unless the employer has hand-edited it)
+  function rgRefresh(qid, force){
+    var box = el(qid+'_answer');
+    if (!box) return;
+    clearRestored(qid);
+    var regenBtn = document.querySelector('[data-rg-regen="'+qid+'"]');
+    var list = rgRoles(qid), none = rgNone(qid);
+    var hasBasis = list.length > 0 || none;
+    if (regenBtn) regenBtn.hidden = !hasBasis;
+    if (!hasBasis){ if (!box.dataset.edited){ box.value=""; } validateRoleGrid(qid); recompute(); return; }
+    // only auto-overwrite if the employer hasn't manually edited the text
+    if (force || (!box.dataset.edited && !box.dataset.restored)){
+      box.value = rgGenerate(qid);
+    }
+    autogrow(box); validateRoleGrid(qid); recompute();
+  }
+  document.querySelectorAll('[data-rolegrid]').forEach(function(grid){
+    var qid = grid.getAttribute('data-rolegrid');
+    // steppers
+    grid.querySelectorAll('.rg-step').forEach(function(st){
+      var input = st.querySelector('input');
+      st.querySelectorAll('button').forEach(function(b){
+        b.addEventListener('click', function(){ touched[qid]=true; input.value = rgClamp((+input.value||0) + (+b.dataset.stepDir)); rgRefresh(qid); });
+      });
+      input.addEventListener('input', function(){ touched[qid]=true; input.value = input.value.replace(/[^0-9]/g,''); rgRefresh(qid); });
+      input.addEventListener('blur', function(){ input.value = rgClamp(input.value); rgRefresh(qid); });
+      wireStepperKeys(input, 0, 99, 1, function(){ touched[qid]=true; rgRefresh(qid); });
+    });
+    // custom role name inputs
+    grid.querySelectorAll('.rg-custom .rg-name').forEach(function(nm){
+      nm.addEventListener('input', function(){ touched[qid]=true; rgRefresh(qid); });
+    });
+    // "no openings" toggle — mutually exclusive-ish with counts
+    var none = el(qid+'_none');
+    if (none) none.addEventListener('change', function(){
+      touched[qid]=true;
+      if (none.checked){ // clearing counts would be destructive; just let generate prefer counts if present
+      }
+      rgRefresh(qid, true); // force a fresh suggestion on toggle
+    });
+    // mark the answer box as hand-edited once the user types in it
+    var box = el(qid+'_answer');
+    if (box) box.addEventListener('input', function(){ box.dataset.edited = "1"; touched[qid]=true; autogrow(box); validateRoleGrid(qid); recompute(); });
+    // regenerate button — fresh random phrasing, clears the hand-edited flag
+    var regen = document.querySelector('[data-rg-regen="'+qid+'"]');
+    if (regen) regen.addEventListener('click', function(){ if(box) delete box.dataset.edited; rgRefresh(qid, true); if(box) box.focus(); });
+  });
+
+  /* ---- source-grid (Question 3): checklist + custom + auto-answer ---- */
+  function sgSources(qid){
+    var list = [];
+    document.querySelectorAll('#'+qid+' .src-check:checked').forEach(function(cb){ if(list.indexOf(cb.value)===-1) list.push(cb.value); });
+    document.querySelectorAll('#'+qid+' .src-custom').forEach(function(inp){
+      var v=(inp.value||'').trim(); if(v && list.indexOf(v)===-1) list.push(v);
+    });
+    return list;
+  }
+  // natural list of sources (no articles/pluralization — they're already phrases)
+  function sourcesPhrase(list){
+    if (list.length === 1) return list[0];
+    if (list.length === 2) return list[0] + " and " + list[1];
+    return list.slice(0,-1).join(", ") + ", and " + list[list.length-1];
+  }
+  function sgGenerate(qid){
+    var pool = (CFG.phrasings && CFG.phrasings[qid]) || {};
+    var list = sgSources(qid);
+    if (!list.length) return "";
+    var tmpl = pick(pool.templates) || "We post our openings on {sources}.";
+    return tmpl.replace(/\{sources\}/g, sourcesPhrase(list));
+  }
+  function sgRefresh(qid, force){
+    var box = el(qid+'_answer'); if(!box) return;
+    clearRestored(qid);
+    var regenBtn = document.querySelector('[data-sg-regen="'+qid+'"]');
+    var list = sgSources(qid);
+    if (regenBtn) regenBtn.hidden = (list.length===0);
+    if (!list.length){ if(!box.dataset.edited) box.value=""; validateSourceGrid(qid); recompute(); return; }
+    if (force || (!box.dataset.edited && !box.dataset.restored)){ box.value = sgGenerate(qid); }
+    autogrow(box); validateSourceGrid(qid); recompute();
+  }
+  document.querySelectorAll('[data-sourcegrid]').forEach(function(grid){
+    var qid = grid.getAttribute('data-sourcegrid');
+    grid.querySelectorAll('.src-check').forEach(function(cb){
+      cb.addEventListener('change', function(){ touched[qid]=true; cb.closest('.src-item').classList.toggle('checked', cb.checked); sgRefresh(qid); });
+    });
+    grid.querySelectorAll('.src-custom').forEach(function(inp){
+      inp.addEventListener('input', function(){ if(inp.value.trim()) touched[qid]=true; sgRefresh(qid); });
+    });
+    var box = el(qid+'_answer');
+    if (box) box.addEventListener('input', function(){ box.dataset.edited="1"; touched[qid]=true; autogrow(box); validateSourceGrid(qid); recompute(); });
+    var regen = document.querySelector('[data-sg-regen="'+qid+'"]');
+    if (regen) regen.addEventListener('click', function(){ if(box) delete box.dataset.edited; sgRefresh(qid, true); if(box) box.focus(); });
+  });
+
+  /* ---- count-answer (Question 5): single stepper + "none" toggle + auto-answer ---- */
+  function caValue(qid){ var e=el(qid+'_n'); var v=parseInt(e?e.value:'',10); return isNaN(v)?0:Math.max(0,v); }
+  function caNone(qid){ var c=el(qid+'_none'); return !!(c && c.checked); }
+  function caGenerate(qid){
+    var pool = (CFG.phrasings && CFG.phrasings[qid]) || {};
+    var n = caValue(qid);
+    if (n > 0){
+      var tmpl = pick(pool.positive) || "Yes — we anticipate about {n} openings over the next 6 to 12 months.";
+      return tmpl.replace(/\{n\}/g, n);
+    }
+    if (caNone(qid)){
+      return pick(pool.negative) || "No specific number yet, but we expect to need these skills as we grow.";
+    }
+    return "";
+  }
+  function caRefresh(qid, force){
+    var box = el(qid+'_answer'); if(!box) return;
+    clearRestored(qid);
+    var regenBtn = document.querySelector('[data-ca-regen="'+qid+'"]');
+    var n = caValue(qid), none = caNone(qid);
+    var hasBasis = n > 0 || none;
+    if (regenBtn) regenBtn.hidden = !hasBasis;
+    if (!hasBasis){ if(!box.dataset.edited) box.value=""; validateCountAnswer(qid); recompute(); return; }
+    if (force || (!box.dataset.edited && !box.dataset.restored)){ box.value = caGenerate(qid); }
+    autogrow(box); validateCountAnswer(qid); recompute();
+  }
+  document.querySelectorAll('[data-countanswer]').forEach(function(ca){
+    var qid = ca.getAttribute('data-countanswer');
+    var st = ca.querySelector('.ca-step'), input = st.querySelector('input');
+    var max = +st.dataset.max, step = +st.dataset.step;
+    function clamp(v){ v=parseInt(v,10); if(isNaN(v)||v<0) v=0; return Math.min(max, v); }
+    st.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click', function(){ touched[qid]=true; input.value = clamp((+input.value||0) + step*(+b.dataset.stepDir)); caRefresh(qid); });
+    });
+    input.addEventListener('input', function(){ touched[qid]=true; input.value = input.value.replace(/[^0-9]/g,''); caRefresh(qid); });
+    input.addEventListener('blur', function(){ input.value = clamp(input.value); caRefresh(qid); });
+    wireStepperKeys(input, 0, max, step, function(){ touched[qid]=true; caRefresh(qid); });
+    var none = el(qid+'_none');
+    if (none) none.addEventListener('change', function(){ touched[qid]=true; caRefresh(qid, true); });
+    var box = el(qid+'_answer');
+    if (box) box.addEventListener('input', function(){ box.dataset.edited="1"; touched[qid]=true; autogrow(box); validateCountAnswer(qid); recompute(); });
+    var regen = document.querySelector('[data-ca-regen="'+qid+'"]');
+    if (regen) regen.addEventListener('click', function(){ if(box) delete box.dataset.edited; caRefresh(qid, true); if(box) box.focus(); });
+  });
+
+  // roles — preset checkboxes
+  document.querySelectorAll(".role input").forEach(function(cb){
+    cb.addEventListener("change", function(){
+      var holder = cb.closest("[data-roles]");
+      touched[holder.id] = true;
+      cb.closest(".role").classList.toggle("checked", cb.checked);
+      validateRoles(holder.id); recompute();
+    });
+  });
+  // roles — free-text "other" box
+  document.querySelectorAll("[data-roles-other]").forEach(function(ta){
+    var qid = ta.getAttribute("data-roles-other");
+    ta.addEventListener("input", function(){ if(ta.value.trim()) touched[qid]=true; validateRoles(qid); recompute(); });
+  });
+  /* ---- practicum (Question 6): yes/no + count (if yes) + auto-generated answer ---- */
+  function prYN(qid){ var r=document.querySelector('input[name="'+qid+'_yn"]:checked'); return r?r.value:""; }
+  function prCount(qid){ var e=el(qid+'_count'); var v=parseInt(e?e.value:'',10); return isNaN(v)?1:Math.max(1,v); }
+  function prGenerate(qid){
+    var pool = (CFG.phrasings && CFG.phrasings[qid]) || {};
+    var yn = prYN(qid);
+    if (yn === "yes"){
+      var tmpl = pick(pool.positive) || "Yes, in principle we could host {n}.";
+      var n = prCount(qid);
+      var nPhrase = (n > 1) ? (n + " students") : "a student";
+      return tmpl.replace(/\{n\}/g, nPhrase);
+    }
+    if (yn === "no"){
+      return pick(pool.negative) || "Not at this time, but we think placements are a great idea and would revisit it.";
+    }
+    return "";
+  }
+  function prRefresh(qid, force){
+    var box = el(qid+'_answer'); if(!box) return;
+    clearRestored(qid);
+    var wrap = document.querySelector('[data-pr-answerwrap="'+qid+'"]');
+    var regenBtn = document.querySelector('[data-pr-regen="'+qid+'"]');
+    var yn = prYN(qid);
+    var hasBasis = (yn === "yes" || yn === "no");
+    if (wrap) wrap.hidden = !hasBasis;
+    if (regenBtn) regenBtn.hidden = !hasBasis;
+    if (!hasBasis){ if(!box.dataset.edited) box.value=""; validatePracticum(qid); recompute(); return; }
+    if (force || (!box.dataset.edited && !box.dataset.restored)){ box.value = prGenerate(qid); }
+    autogrow(box); validatePracticum(qid); recompute();
+  }
+  document.querySelectorAll("[data-practicum]").forEach(function(pr){
+    var qid = pr.id;
+    var detail = pr.querySelector(".practicum-detail");
+    pr.querySelectorAll(".yesno input").forEach(function(r){
+      r.addEventListener("change", function(){
+        touched[qid] = true;
+        pr.querySelectorAll(".yesno label").forEach(function(l){ l.classList.toggle("sel", l.dataset.val === r.value); });
+        detail.hidden = (r.value !== "yes");
+        prRefresh(qid, true); // fresh suggestion whenever yes/no changes
+      });
+    });
+    // count stepper (only relevant when "yes")
+    var st = pr.querySelector('.pr-step');
+    if (st){
+      var input = st.querySelector('input');
+      var max = +st.dataset.max, step = +st.dataset.step;
+      function clamp(v){ v=parseInt(v,10); if(isNaN(v)||v<1) v=1; return Math.min(max, v); }
+      st.querySelectorAll('button').forEach(function(b){
+        b.addEventListener('click', function(){ touched[qid]=true; input.value = clamp((+input.value||1) + step*(+b.dataset.stepDir)); prRefresh(qid); });
+      });
+      input.addEventListener('input', function(){ touched[qid]=true; input.value=input.value.replace(/[^0-9]/g,''); prRefresh(qid); });
+      input.addEventListener('blur', function(){ input.value = clamp(input.value); prRefresh(qid); });
+      wireStepperKeys(input, 1, max, step, function(){ touched[qid]=true; prRefresh(qid); });
+    }
+    var box = el(qid+'_answer');
+    if (box) box.addEventListener('input', function(){ box.dataset.edited="1"; touched[qid]=true; autogrow(box); validatePracticum(qid); recompute(); });
+    var regen = document.querySelector('[data-pr-regen="'+qid+'"]');
+    if (regen) regen.addEventListener('click', function(){ if(box) delete box.dataset.edited; prRefresh(qid, true); if(box) box.focus(); });
+  });
+
+  /* ---- validation + progress ---- */
+  var contactFields = [].slice.call(document.querySelectorAll('[data-contact="1"]'));
+  var requiredContacts = contactFields.filter(function(f){ return f.dataset.optional !== "1"; });
+  contactFields.forEach(function(f){
+    var input = f.querySelector("input");
+    input.addEventListener("input", function(){ validateContact(f); recompute(); });
+    input.addEventListener("blur", function(){ validateContact(f); });
+  });
+  el("certify").addEventListener("change", recompute);
+  CFG.questions.forEach(function(q){
+    if (q.type === "textarea" || q.type === "text") {
+      var ctl = el(q.id);
+      ctl.addEventListener("input", function(ev){ if(ev && ev.isTrusted) delete ctl.dataset.fromSuggestion; if(ctl.tagName==="TEXTAREA") autogrow(ctl); validateQ(q); recompute(); });
+      ctl.addEventListener("blur", function(){ validateQ(q); });
+    }
+  });
+  // every textarea grows to fit its content so nothing is hidden; also catches the
+  // "other roles" box and the practicum note. Runs once at init for restored drafts.
+  form.querySelectorAll("textarea").forEach(function(ta){
+    ta.addEventListener("input", function(){ autogrow(ta); });
+    autogrow(ta);
+  });
+
+  function setFb(fb, kind, msg){ fb.className = "feedback" + (kind?" "+kind:""); fb.innerHTML = msg ? ((ICON[kind]||"")+"<span>"+esc(msg)+"</span>") : ""; }
+
+  function validateContact(f){
+    var input = f.querySelector("input"), fb = f.querySelector(".feedback"), v = input.value.trim();
+    if (!v){ setFb(fb,"",""); return false; }
+    if (f.dataset.kind === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ setFb(fb,"warn","That doesn't look like a complete email."); return false; }
+    if (f.dataset.kind === "tel" && v.replace(/\D/g,"").length < 10){ setFb(fb,"warn","Please include a full 10-digit phone number."); return true; }
+    var min = +(f.dataset.min||0);
+    if (min && v.length < min){ setFb(fb,"warn","A little more detail helps."); return true; }
+    setFb(fb,"good","Looks good."); return true;
+  }
+  function validateQ(q){
+    var input = el(q.id), f = input.closest(".field"), fb = f.querySelector(".feedback"), v = input.value.trim();
+    if (q.optional){ setFb(fb, v?"good":"", v?"Thanks for the detail.":""); return true; }
+    if (!v){ setFb(fb,"",""); return false; }
+    if (words(v) < 4 || v.length < 18){ setFb(fb,"warn","Try to be a bit more specific — it makes a stronger case."); return true; }
+    setFb(fb,"good","Great — clear and specific."); return true;
+  }
+  function fieldFb(id){ var f = el(id).closest(".field"); return f ? f.querySelector(".feedback") : null; }
+  function validateRoles(id){
+    var fb = fieldFb(id); if(!fb) return;
+    var n = collectRoles(id).length;
+    if (!touched[id] && n===0){ setFb(fb,"",""); return; }
+    if (n===0) setFb(fb,"warn","Pick at least one role, or type one in the box below.");
+    else setFb(fb,"good", n + " role" + (n===1?"":"s") + " listed.");
+  }
+  function validateRoleGrid(id){
+    var fb = fieldFb(id); if(!fb) return;
+    var list = rgRoles(id), none = rgNone(id);
+    if (!touched[id] && list.length===0 && !none){ setFb(fb,"",""); return; }
+    if (list.length === 0 && !none){ setFb(fb,"warn","Set a number beside a role, or tick “No vacancies right now”."); return; }
+    if (list.length > 0){
+      var total = list.reduce(function(s,r){return s+r.count;},0);
+      setFb(fb,"good", total + " position" + (total===1?"":"s") + " across " + list.length + " role" + (list.length===1?"":"s") + ".");
+    } else {
+      setFb(fb,"good","Noted — we'll record your interest for the future.");
+    }
+  }
+  function validateSourceGrid(id){
+    var fb = fieldFb(id); if(!fb) return;
+    var n = sgSources(id).length;
+    if (!touched[id] && n===0){ setFb(fb,"",""); return; }
+    if (n===0){ setFb(fb,"warn","Tick at least one place you post, or add your own."); return; }
+    setFb(fb,"good", n + " source" + (n===1?"":"s") + " selected.");
+  }
+  function validateCountAnswer(id){
+    var fb = fieldFb(id); if(!fb) return;
+    var n = caValue(id), none = caNone(id);
+    if (!touched[id] && n===0 && !none){ setFb(fb,"",""); return; }
+    if (n===0 && !none){ setFb(fb,"warn","Set a number, or tick “No specific number yet”."); return; }
+    if (n>0) setFb(fb,"good", n + " opening" + (n===1?"":"s") + " anticipated.");
+    else setFb(fb,"good","Noted — we'll record your future interest.");
+  }
+  function validatePracticum(id){
+    var fb = fieldFb(id); if(!fb) return;
+    var r = document.querySelector('input[name="'+id+'_yn"]:checked');
+    if (!touched[id] && !r){ setFb(fb,"",""); return; }
+    if (!r) setFb(fb,"warn","Please choose Yes or No.");
+    else setFb(fb,"good","Thanks.");
+  }
+  function validateNumber(q){
+    var fb = fieldFb(q.id); if(!fb) return;
+    if (!touched[q.id]){ setFb(fb,"",""); return; }
+    setFb(fb,"good","Got it.");
+  }
+
+  function isQuestionFilled(q){
+    if (q.optional) return true;
+    if (q.type === "textarea" || q.type === "text") return !!el(q.id).value.trim();
+    if (q.type === "number") return !!touched[q.id];            // must be deliberately set (0 is valid, but only once touched)
+    if (q.type === "roles") return collectRoles(q.id).length > 0;
+    if (q.type === "rolegrid" || q.type === "sourcegrid" || q.type === "countanswer") return !!(el(q.id+"_answer") && el(q.id+"_answer").value.trim());
+    if (q.type === "practicum") { return !!(el(q.id+"_answer") && el(q.id+"_answer").value.trim()); }
+    return true;
+  }
+
+  // is the email filled and well-formed? (the one validity that blocks submit)
+  function emailOk(){
+    var v = (el("repEmail").value||"").trim();
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  }
+  var formComplete = false;
+  // return the DOM element of the first incomplete required field, or null
+  function firstIncomplete(){
+    for (var i=0;i<CFG.questions.length;i++){ var q = CFG.questions[i];
+      if (!q.optional && !isQuestionFilled(q)) return el(q.id).closest(".field");
+    }
+    for (var j=0;j<requiredContacts.length;j++){
+      var f = requiredContacts[j], v = f.querySelector("input").value.trim();
+      if (!v) return f;
+      if (f.dataset.kind === "email" && !emailOk()) return f;  // present but malformed
+    }
+    if (!el("certify").checked) return el("certify").closest(".field");
+    return null;
+  }
+  function recompute(){
+    var req = [], done = 0;
+    CFG.questions.forEach(function(q){ if(!q.optional){ req.push(q); if(isQuestionFilled(q)) done++; } });
+    var total = req.length + requiredContacts.length + 1; // +certify
+    requiredContacts.forEach(function(f){
+      var v = f.querySelector("input").value.trim();
+      if (!v) return;
+      if (f.dataset.kind === "email" && !emailOk()) return; // malformed email doesn't count as done
+      done++;
+    });
+    if (el("certify").checked) done++;
+
+    var pct = Math.round(done/total*100);
+    el("progressFill").style.width = pct + "%";
+    el("progressPct").textContent = pct + "%";
+    formComplete = done >= total;
+    // keep the button clickable so an incomplete click can guide the user; show state via class + aria
+    el("downloadBtn").classList.toggle("is-ready", formComplete);
+    el("downloadBtn").setAttribute("aria-disabled", formComplete ? "false" : "true");
+    var left = total - done;
+    el("statusMsg").className = "status-msg" + (formComplete?" done":"");
+    el("statusMsg").textContent = formComplete ? "All set — download your completed PDF." : (left + " question" + (left===1?"":"s") + " left.");
+    saveDraft();
+  }
+
+  /* ---- draft autosave ---- */
+  function saveDraft(){
+    try {
+      var d = { v:{}, roles:{}, radios:{}, checks:{}, edited:{} };
+      d.srcChecks = {};  // source-grid checkboxes keyed by "<qid>::<value>"
+      form.querySelectorAll("input, textarea").forEach(function(e){
+        if (e.type === "checkbox"){
+          if (e.id==="certify") d.v.certify = e.checked;
+          else if (e.classList.contains("src-check")){ d.srcChecks[e.getAttribute("data-sg")+"::"+e.value] = e.checked; }
+          else if (e.closest(".roles")) d.roles[e.value] = e.checked;
+          else if (e.id) d.checks[e.id] = e.checked;   // e.g. role-grid "no openings"
+        }
+        else if (e.type === "radio"){ if (e.checked) d.radios[e.name] = e.value; }
+        else if (e.id) d.v[e.id] = e.value;
+      });
+      // remember which grid answer boxes the employer hand-edited
+      document.querySelectorAll("[data-rg-answer], [data-sg-answer], [data-ca-answer], [data-pr-answer]").forEach(function(b){ if(b.dataset.edited) d.edited[b.id]=1; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+    } catch(e){}
+  }
+  function loadDraft(){
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY); if(!raw) return;
+      var d = JSON.parse(raw);
+      Object.keys(d.v||{}).forEach(function(id){ if(id==="certify"){ el("certify").checked=!!d.v.certify; return;} var e=el(id); if(e) e.value=d.v[id]; });
+      // restore roles and mark the roles question touched if any was saved
+      document.querySelectorAll(".role input").forEach(function(cb){
+        if(d.roles && d.roles[cb.value]){ cb.checked=true; cb.closest(".role").classList.add("checked"); var h=cb.closest("[data-roles]"); if(h) touched[h.id]=true; }
+      });
+      // restore hand-edit flags FIRST, and mark saved answer boxes as "restored" so the
+      // init-time refreshers below don't overwrite their wording (A1/A2 fix)
+      Object.keys(d.edited||{}).forEach(function(id){ var b=el(id); if(b) b.dataset.edited="1"; });
+      document.querySelectorAll("[data-rg-answer],[data-sg-answer],[data-ca-answer],[data-pr-answer]").forEach(function(b){
+        if ((b.value||"").trim()) b.dataset.restored="1";
+      });
+      // restore generic checkboxes (role-grid / count "no openings") BEFORE re-firing radios
+      Object.keys(d.checks||{}).forEach(function(id){ var c=el(id); if(c) c.checked=!!d.checks[id]; });
+      // restore radios (practicum) and re-fire change so the conditional UI re-applies
+      Object.keys(d.radios||{}).forEach(function(name){
+        var r=document.querySelector('input[name="'+name+'"][value="'+d.radios[name]+'"]');
+        if(r){ r.checked=true; r.dispatchEvent(new Event("change",{bubbles:true})); }
+      });
+      // a restored number value means it was deliberately set before — mark touched
+      CFG.questions.forEach(function(q){ if(q.type==="number" && d.v && d.v[q.id]!=null && d.v[q.id]!=="") touched[q.id]=true; });
+      // a restored "other roles" value also counts as touching the roles question
+      CFG.questions.forEach(function(q){ if(q.type==="roles" && d.v && (d.v[q.id+"_other"]||"").trim()) touched[q.id]=true; });
+      CFG.questions.forEach(function(q){
+        if(q.type!=="rolegrid") return;
+        var answered = (d.v && (d.v[q.id+"_answer"]||"").trim());
+        var noneOn = d.checks && d.checks[q.id+"_none"];
+        if (answered || noneOn) touched[q.id]=true;
+      });
+      // restore source-grid checkboxes + checked styling, and mark touched
+      document.querySelectorAll(".src-check").forEach(function(cb){
+        var key = cb.getAttribute("data-sg")+"::"+cb.value;
+        if (d.srcChecks && d.srcChecks[key]){ cb.checked=true; cb.closest(".src-item").classList.add("checked"); touched[cb.getAttribute("data-sg")]=true; }
+      });
+      CFG.questions.forEach(function(q){
+        if(q.type!=="sourcegrid") return;
+        if (d.v && (d.v[q.id+"_answer"]||"").trim()) touched[q.id]=true;
+      });
+      // count-answer: a restored number, answer, or "none" toggle means it was touched
+      CFG.questions.forEach(function(q){
+        if(q.type!=="countanswer") return;
+        var hasN = d.v && d.v[q.id+"_n"]!=null && d.v[q.id+"_n"]!=="" && d.v[q.id+"_n"]!=="0";
+        var answered = d.v && (d.v[q.id+"_answer"]||"").trim();
+        var noneOn = d.checks && d.checks[q.id+"_none"];
+        if (hasN || answered || noneOn) touched[q.id]=true;
+      });
+      // practicum: restored yes/no or answer means touched; show the answer wrap
+      CFG.questions.forEach(function(q){
+        if(q.type!=="practicum") return;
+        var yn = d.radios && d.radios[q.id+"_yn"];
+        var answered = d.v && (d.v[q.id+"_answer"]||"").trim();
+        if (yn || answered) touched[q.id]=true;
+        var wrap = document.querySelector('[data-pr-answerwrap="'+q.id+'"]'); if(wrap && (yn||answered)) wrap.hidden=false;
+      });
+      // the radio re-fire above may have regenerated grid/practicum answers with force;
+      // re-apply any saved answer text the employer had (so edits and prior wording survive a reload)
+      Object.keys(d.v||{}).forEach(function(id){
+        if (/_answer$/.test(id)){ var b=el(id); if(b && (d.v[id]||"").length) b.value=d.v[id]; }
+      });
+    } catch(e){}
+  }
+  loadDraft();
+  contactFields.forEach(validateContact);
+  CFG.questions.forEach(function(q){
+    if(q.type==="textarea"||q.type==="text") validateQ(q);
+    else if(q.type==="roles") validateRoles(q.id);
+    else if(q.type==="rolegrid") rgRefresh(q.id);
+    else if(q.type==="sourcegrid") sgRefresh(q.id);
+    else if(q.type==="countanswer") caRefresh(q.id);
+    else if(q.type==="practicum") prRefresh(q.id);
+    else if(q.type==="number") validateNumber(q);
+  });
+  recompute();
+  initializing = false;  // from here on, user interactions regenerate restored wording
+
+  /* ---- reset ---- */
+  el("resetBtn").addEventListener("click", function(){
+    if(!window.confirm("Clear all your answers? This can't be undone.")) return;
+    form.querySelectorAll("input, textarea").forEach(function(e){
+      if(e.type==="checkbox"||e.type==="radio") e.checked=false; else e.value="";
+    });
+    touched = {};
+    document.querySelectorAll(".role").forEach(function(r){ r.classList.remove("checked"); });
+    document.querySelectorAll(".yesno label").forEach(function(l){ l.classList.remove("sel"); });
+    document.querySelectorAll(".practicum-detail").forEach(function(dd){ dd.hidden = true; });
+    document.querySelectorAll(".stepper input").forEach(function(i){ i.value = i.closest("[data-practicum]") ? 1 : 0; });
+    // clear grid hand-edit flags and answer boxes
+    document.querySelectorAll("[data-rg-answer], [data-sg-answer], [data-ca-answer], [data-pr-answer]").forEach(function(b){ delete b.dataset.edited; b.value=""; });
+    document.querySelectorAll(".src-item").forEach(function(s){ s.classList.remove("checked"); });
+    document.querySelectorAll(".feedback").forEach(function(fb){ fb.className="feedback"; fb.innerHTML=""; });
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+    el("formDate").value = new Date().toISOString().slice(0,10);
+    document.querySelectorAll("[data-pr-answerwrap]").forEach(function(w){ w.hidden = true; });
+    document.querySelectorAll("[data-rolegrid]").forEach(function(g){ rgRefresh(g.getAttribute("data-rolegrid")); });
+    document.querySelectorAll("[data-sourcegrid]").forEach(function(g){ sgRefresh(g.getAttribute("data-sourcegrid")); });
+    document.querySelectorAll("[data-countanswer]").forEach(function(g){ caRefresh(g.getAttribute("data-countanswer")); });
+    document.querySelectorAll("[data-practicum]").forEach(function(g){ prRefresh(g.id); });
+    recompute();
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
+
+  /* ================= PDF ================= */
+  // If incomplete, guide the employer to the first missing field instead of generating.
+  el("downloadBtn").addEventListener("click", function(){
+    if (!formComplete){
+      var f = firstIncomplete();
+      if (f){
+        var input = f.querySelector("input, textarea, [data-roles], .yesno");
+        f.scrollIntoView({behavior:"smooth", block:"center"});
+        setTimeout(function(){ try{ (f.querySelector("input, textarea")||{}).focus && f.querySelector("input, textarea").focus(); }catch(e){} }, 350);
+        // flash the feedback for that field
+        var fb = f.querySelector(".feedback");
+        if (fb && !fb.textContent) setFb(fb, "warn", "This one still needs an answer.");
+      }
+      return;
+    }
+    generatePDF();
+  });
+  function val(id){ var e=el(id); return e ? (e.value||"").trim() : ""; }
+  function prettyDate(iso){ if(!iso) return ""; var d=new Date(iso+"T00:00:00"); return isNaN(d)?iso:d.toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"}); }
+
+  // Assemble the 7 official-form answers from the (possibly reordered) questions
+  function officialAnswers(){
+    var a = { q1:"", q2:"", q3:"", q4:"", q5:"", q6:"", q7:"" };
+    var get = function(id){ return val(id); };
+    var byMap = {};
+    CFG.questions.forEach(function(q){ byMap[q.mapsTo] = q; });
+
+    // q1 community
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q1") a.q1 = get(q.id); });
+
+    // q2 = the role-grid's generated (and possibly edited) answer; fall back for other types
+    CFG.questions.forEach(function(q){
+      if(q.mapsTo!=="q2") return;
+      if(q.type==="rolegrid") a.q2 = get(q.id+"_answer");
+      else if(q.type==="roles") a.q2 = collectRoles(q.id).join(", ");
+      else a.q2 = get(q.id);
+    });
+
+    // q3 postings
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q3") a.q3 = (q.type==="sourcegrid") ? get(q.id+"_answer") : get(q.id); });
+    // q4 hard to fill
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q4") a.q4 = get(q.id); });
+    // q5 future openings — the count-answer's generated (and possibly edited) text;
+    // fall back to the legacy count+detail split if an older config is used.
+    var q5done = false;
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q5" && q.type==="countanswer"){ a.q5 = get(q.id+"_answer"); q5done = true; } });
+    if (!q5done){
+      var futCount="", futDetail="";
+      CFG.questions.forEach(function(q){ if(q.mapsTo==="q5a") futCount=get(q.id); if(q.mapsTo==="q5b") futDetail=get(q.id); });
+      var futN = parseInt(futCount, 10); if (isNaN(futN)) futN = null;
+      var q5=[];
+      if (futN != null) q5.push(futN > 0 ? "Yes — approximately " + futN + " anticipated over the next 6 to 12 months." : "No additional openings anticipated at this time.");
+      if (futDetail) q5.push(futDetail);
+      a.q5 = q5.join(" ");
+    }
+    // q6 practicum — the generated (and possibly edited) answer
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q6") a.q6 = get(q.id+"_answer"); });
+    // q7 comments
+    CFG.questions.forEach(function(q){ if(q.mapsTo==="q7") a.q7 = get(q.id); });
+    return a;
+  }
+
+  // Official BC CWRG Employer Support Form question wording (Updated March 2026) — verbatim.
+  var OFFICIAL_Q = {
+    q1: "Which community or communities is your business operating in?",
+    q2: "Do you currently have vacant positions that successful graduates of this training would be qualified to fill (see attached course outline)? Please list the names of the position(s) and how many openings.",
+    q3: "Where do you regularly post positions for your openings?",
+    q4: "Have you had a hard time filling these positions in the past? If yes, please describe any challenges you faced.",
+    q5: "Do you foresee future openings in these positions? If yes, how many job openings do you anticipate over the next 6 to 12 months?",
+    q6: "As a part of training, if a practicum is required, are you providing a practicum space? If so, how many placements?",
+    q7: "How will your business support this project (for example: support with recruitment of participants, offer presentations, anticipate hiring graduates of this cohort, etc.)?"
+  };
+
+  // Map characters jsPDF's standard (WinAnsi) fonts can't render to safe equivalents.
+  // Covers the common mobile-autocorrect curly quotes/dashes and a few accents.
+  function pdfSafe(s){
+    if (s == null) return "";
+    return String(s)
+      .replace(/[‘’‚‛]/g, "'")
+      .replace(/[“”„‟]/g, '"')
+      .replace(/[–—―]/g, "-")
+      .replace(/…/g, "...")
+      .replace(/[   ]/g, " ")
+      .replace(/[•●]/g, "-")
+      .replace(/™/g, "(TM)")
+      .replace(/[^\x00-\xFF]/g, "");
+  }
+
+  function generatePDF(){
+    if (!(window.jspdf && window.jspdf.jsPDF)){
+      el("statusMsg").className = "status-msg err";
+      el("statusMsg").textContent = "Couldn\u2019t load the PDF tool \u2014 please check your connection and reload the page.";
+      return;
+    }
+    try {
+      buildAndSavePDF();
+    } catch (e){
+      el("statusMsg").className = "status-msg err";
+      el("statusMsg").textContent = "Something went wrong creating the PDF. Please reload and try again.";
+    }
+  }
+  function buildAndSavePDF(){
+    // Faithful recreation of the official BC CWRG Employer Support Form (Updated March 2026).
+    // Positions are measured from the official PDF (612x792). jsPDF y grows downward, so the
+    // measured "top" values from the official layout are used directly as y.
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({unit:"pt", format:"letter"});
+    var PW = 612, PH = 792, INK = [0,0,0];
+    var LX = 72;                 // left text margin
+    var TX0 = 67.5, TX1 = 544.5; // info-table left/right
+    var BX0 = 64.5, BX1 = 540.5; // answer-box left/right
+    var pageNum = 0;
+
+    function sz(n){ doc.setFontSize(n); }
+    function font(style){ doc.setFont("helvetica", style||"normal"); }
+    function wrap(text, width){
+      text = pdfSafe(text);
+      var broken = text.split(/(\s+)/).map(function(tok){
+        if (!tok.trim()) return tok;
+        if (doc.getTextWidth(tok) <= width) return tok;
+        var out="", cur="";
+        for (var i=0;i<tok.length;i++){ var t2=cur+tok[i];
+          if (doc.getTextWidth(t2)>width && cur){ out+=cur+"\u0001"; cur=tok[i]; } else cur=t2; }
+        return out+cur;
+      }).join("");
+      return doc.splitTextToSize(broken.replace(/\u0001/g,"\n"), width);
+    }
+
+    function headerAndFooter(){
+      pageNum++;
+      doc.setTextColor.apply(doc, INK);
+      if (CFG.logo){
+        try {
+          // fit the logo within a short header band; cap height so it clears the intro
+          // (page 1, y~86) and the page-2 Q3 heading (y~76).
+          var maxH = 40, maxW = 110;
+          var lh = maxH, lw = lh * (CFG.logoW/CFG.logoH);
+          if (lw > maxW){ lw = maxW; lh = lw * (CFG.logoH/CFG.logoW); }
+          doc.addImage(CFG.logo, "PNG", LX, 20, lw, lh);
+        } catch(e){}
+      }
+      font("normal"); sz(11); doc.setTextColor.apply(doc, INK);
+      doc.text("Community Workforce Response Grant", TX1, 44, {align:"right"});
+      doc.text("Employer Support Form", TX1, 58, {align:"right"});
+      sz(9);
+      doc.text("Community Workforce Response Grant Employer Support Form – Updated March 2026", PW/2, 748, {align:"center"});
+      doc.text("Page " + pageNum + " of 2", PW/2, 760, {align:"center"});
+      doc.setTextColor.apply(doc, INK);
+    }
+    function box(x0, top, x1, bottom){
+      doc.setDrawColor(0,0,0); doc.setLineWidth(1);
+      doc.rect(x0, top, x1-x0, bottom-top);
+    }
+    // paragraph with a leading plain run + trailing bold run, word-wrapped
+    function drawRichParagraph(plain, bold, x, yTop, xRight, lineH){
+      var tokens = [];
+      pdfSafe(plain).split(/(\s+)/).forEach(function(t){ if(t) tokens.push({t:t,b:false}); });
+      pdfSafe(bold).split(/(\s+)/).forEach(function(t){ if(t) tokens.push({t:t,b:true}); });
+      var cx=x, cy=yTop;
+      tokens.forEach(function(tok){
+        font(tok.b?"bold":"normal"); sz(11);
+        var w = doc.getTextWidth(tok.t);
+        if (/^\s+$/.test(tok.t)){ if (cx+w>xRight){ cx=x; cy+=lineH; } else cx+=w; return; }
+        if (cx+w>xRight){ cx=x; cy+=lineH; }
+        doc.text(tok.t, cx, cy); cx+=w;
+      });
+    }
+    function drawQuestion(num, qtext, qTop, bx0, bTop, bx1, bBottom, answer){
+      font("normal"); sz(11); doc.setTextColor.apply(doc, INK);
+      var textX = 90;
+      var lines = wrap(qtext, TX1 - textX);
+      doc.text(num + ".", LX, qTop);
+      doc.text(lines, textX, qTop);
+      box(bx0, bTop, bx1, bBottom);
+      if (answer){
+        font("normal"); sz(11);
+        var al = wrap(answer, (bx1-bx0)-12);
+        var maxLines = Math.floor((bBottom-bTop-10)/13);
+        if (al.length > maxLines) al = al.slice(0, maxLines);
+        doc.text(al, bx0+6, bTop+14);
+      }
+    }
+
+    var ans = officialAnswers();
+    var ROWH = 36;
+
+    /* ---- PAGE 1 ---- */
+    headerAndFooter();
+    drawRichParagraph(
+      "This form must be completed by an employer supporting the skills training project and returned to the applicant. ",
+      "This form is strictly to provide sector information on current employment needs. Completion of this form does not imply a commitment to hire on behalf of the employer.",
+      LX, 86, TX1, 13);
+
+    var tblTop = 128.5;
+    var rows = [
+      ["Business name:", val("businessName")],
+      ["Business address and/or website:", val("businessAddress")],
+      ["Date:", prettyDate(val("formDate"))],
+      ["Representative first/last name & title:", val("repName")],
+      ["Representative email & phone number:", (val("repEmail") + (val("repPhone") ? "   " + val("repPhone") : "")).trim()],
+      ["Skills training course title:", CFG.programTitle],
+      ["Credential/certification name:", CFG.credential]
+    ];
+    box(TX0, tblTop, TX1, tblTop + ROWH*7);
+    for (var r=1;r<7;r++){ doc.setLineWidth(1); doc.setDrawColor(0,0,0); doc.line(TX0, tblTop+ROWH*r, TX1, tblTop+ROWH*r); }
+    rows.forEach(function(row, i){
+      var top = tblTop + ROWH*i;
+      font("bold"); sz(10); doc.setTextColor.apply(doc, INK);
+      doc.text(pdfSafe(row[0]), LX, top + 11);
+      if (row[1]){ font("normal"); sz(10); doc.text(wrap(row[1], TX1-LX-6), LX, top + 23); }
+    });
+
+    var certTop = 399.5;
+    doc.setLineWidth(1); doc.setDrawColor(0,0,0); doc.rect(LX, certTop, 14, 14);
+    if (el("certify").checked){ doc.setLineWidth(1.4);
+      doc.line(LX+2.5, certTop+7.5, LX+5.5, certTop+11); doc.line(LX+5.5, certTop+11, LX+12, certTop+2.5); }
+    font("normal"); sz(11); doc.setTextColor.apply(doc, INK);
+    doc.text(wrap("I certify that I am authorized to submit this form on behalf of the organization named above and that all information provided on this form is correct to the best of my knowledge.", TX1-(LX+20)), LX+20, certTop+8);
+
+    drawQuestion(1, OFFICIAL_Q.q1, 445.9, BX0, 466.5, BX1, 538.5, ans.q1);
+    drawQuestion(2, OFFICIAL_Q.q2, 558.0, BX0, 587.5, BX1, 674.5, ans.q2);
+
+    /* ---- PAGE 2 ---- */
+    doc.addPage();
+    headerAndFooter();
+    drawQuestion(3, OFFICIAL_Q.q3, 76.5,  BX0, 96.5,  BX1, 173.5, ans.q3);
+    drawQuestion(4, OFFICIAL_Q.q4, 187.7, BX0, 221.5, BX1, 294.5, ans.q4);
+    drawQuestion(5, OFFICIAL_Q.q5, 309.0, BX0, 343.5, BX1, 415.5, ans.q5);
+    drawQuestion(6, OFFICIAL_Q.q6, 430.3, BX0, 464.5, BX1, 548.5, ans.q6);
+    drawQuestion(7, OFFICIAL_Q.q7, 563.0, BX0, 597.5, BX1, 681.5, ans.q7);
+
+    var safeBiz = (val("businessName")||"").replace(/[^\w\s-]/g,"").trim().replace(/\s+/g,"_").slice(0,60);
+    if (!safeBiz) safeBiz = "Employer";
+    var safeDate = val("formDate") || new Date().toISOString().slice(0,10);
+    doc.save("CWRG_Employer_Support_" + safeBiz + "_" + safeDate + ".pdf");
+    el("statusMsg").className = "status-msg done";
+    el("statusMsg").textContent = "Downloaded. " + (CFG.returnInstruction || "Please email the PDF back to the sender.");
+  }
+})();
+
+</script>
+</body>
+</html>

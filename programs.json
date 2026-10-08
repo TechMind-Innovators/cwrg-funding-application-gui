@@ -31,6 +31,63 @@
         "CAD Technician",
         "Drafter"
       ]
+    },
+    {
+      "collegeSlug": "lasalle",
+      "programSlug": "artificial-intelligence-and-machine-learning",
+      "college": "LaSalle College",
+      "programTitle": "Artificial Intelligence and Machine Learning",
+      "credential": "Artificial Intelligence and Machine Learning Diploma",
+      "roles": [
+        "Data Analyst",
+        "Business Intelligence Analyst",
+        "Automation Specialist",
+        "AI Implementation Specialist",
+        "Software Developer",
+        "Data Engineer",
+        "Machine Learning Engineer",
+        "IT Analyst",
+        "Reporting & Analytics Specialist",
+        "Data Scientist"
+      ]
+    },
+       {
+      "collegeSlug": "lasalle",
+      "programSlug": "network-management",
+      "college": "LaSalle College",
+      "programTitle": "Network Management",
+      "credential": "Network Management Diploma",
+      "roles": [
+        "IT Support Specialist",
+        "Help Desk Technician",
+        "IT Administrator",
+        "Network Administrator",
+        "Systems Administrator",
+        "IT Technician",
+        "Desktop Support Technician",
+        "Network Technician",
+        "IT Manager",
+        "Cloud Support Technician"
+      ]
+    },
+       {
+      "collegeSlug": "lasalle",
+      "programSlug": "cibersecurity",
+      "college": "LaSalle College",
+      "programTitle": "Cybersecurity & Threat Intelligence",
+      "credential": "Cybersecurity & Threat Intelligence Diploma",
+      "roles": [
+        "IT Security Specialist",
+        "Cybersecurity Analyst",
+        "Security Analyst",
+        "IT Support Specialist",
+        "Information Security Specialist",
+        "Risk & Compliance Analyst",
+        "Network Security Administrator",
+        "Security Consultant",
+        "Incident Response Analyst",
+        "Threat Intelligence Analyst"
+      ]
     }
   ]
 }

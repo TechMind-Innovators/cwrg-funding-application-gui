@@ -3,14 +3,14 @@
 
   "intro": {
     "badge": "Interactive form",
-    "heading": "A quicker way to share your input",
-    "builtByHtml": "This is an interactive form built by <strong>{charityName}</strong> to make answering as easy as possible — most questions draft an answer for you that you can tweak or replace.",
+    "heading": "Employer Support Form",
+    "builtByHtml": "This is an interactive form built by <strong>{charityName}</strong> to make answering as easy as possible. At the end, you can download the completed form and email it back to the person who sent you this link.",
     "timeEstimate": "About 5 minutes",
     "goalHtml": "We're working to bring grant-funded <strong>{programTitle}</strong> training to your community, in partnership with <strong>{college}</strong>. Your perspective helps the Province of BC see where these skills are needed most, so local people can train for careers in your industry and businesses like yours gain job-ready talent close to home. A few minutes of your insight can help build that talent pipeline."
   },
 
   "notes": {
-    "notCommittedNote": "Completing this form does <strong>not</strong> commit your company to hiring anyone. It gives the Province of BC a picture of real employment needs in your sector — that's all. Please answer candidly.",
+    "notCommittedNote": "Completing this form does <strong>not</strong> commit your company to hiring anyone. It gives the Province of BC a picture of employment needs in your sector — that's all. Please answer candidly.",
     "footerNote": "This form runs entirely in your browser — nothing you enter is sent anywhere until you choose to share the PDF. When you finish, you download a completed PDF and email it back to the person who sent you this link.",
     "returnInstruction": "Please email the completed PDF back to the person who sent you this link."
   },
@@ -68,6 +68,44 @@
       "mapsTo": "q7"
     }
   ],
+
+  "communities": {
+    "question": "Which community or communities does your business operate in? (Official Q1.) Strong answers name specific BC cities/regions, grounding the demand locally.",
+    "pool": [
+      "We operate out of Surrey and the wider Metro Vancouver region, with most of our job sites spread across the Fraser Valley from Langley to Chilliwack.",
+      "Our shop is based in Prince George and we take on work throughout northern BC, including Vanderhoof, Fort St. James and several surrounding First Nations communities where we struggle to find local tradespeople.",
+      "Our office is in Port Coquitlam, and we also have employees working in Surrey, Burnaby, Richmond, Vancouver, Victoria and Nanaimo depending on where our worksites are located.",
+      "We're based on Vancouver Island, mainly Nanaimo and the central island, and travel up-island for larger projects.",
+      "We work throughout the Okanagan — Kelowna, Vernon and Penticton — and occasionally take on contracts in Kamloops.",
+      "We operate across the Lower Mainland, with our main office in Burnaby and crews regularly working in Coquitlam, Delta and Langley.",
+      "Our business is based in Victoria and we serve the Greater Victoria area and the southern Gulf Islands.",
+      "We're a Kootenay-based company working across Nelson, Castlegar and Trail, where skilled trades are especially hard to find locally.",
+      "We're headquartered in Abbotsford and most of our work is in the Fraser Valley, from Mission through to Hope.",
+      "Our main office is in Kelowna and we cover the Central Okanagan, with projects as far out as Vernon and West Kelowna.",
+      "We operate in and around Kamloops, serving the Thompson-Nicola region and travelling to smaller interior communities as needed.",
+      "We're based in Richmond and work throughout Metro Vancouver, with a lot of our projects in Vancouver and the North Shore.",
+      "Our crews work across the North Island — Campbell River, Courtenay and Port Hardy — where qualified people can be very hard to find.",
+      "We're located in Langley and take on work throughout the Fraser Valley and south Metro Vancouver, including Surrey and Delta.",
+      "We operate in Fort St. John and across the Peace region, where the labour shortage in skilled roles is especially acute.",
+      "Our business serves the Sunshine Coast, from Gibsons to Powell River, and we occasionally travel to the Lower Mainland for larger jobs.",
+      "We're based in Cranbrook and cover the East Kootenay, including Kimberley, Fernie and Invermere.",
+      "We work throughout Greater Victoria and the Saanich Peninsula, and take on island-wide contracts when they come up.",
+      "Our head office is in North Vancouver and we work across the North Shore and into Squamish and Whistler.",
+      "We operate in Chilliwack and the eastern Fraser Valley, serving Agassiz, Hope and the surrounding rural communities.",
+      "We're a Nanaimo-based company and most of our work is on central and northern Vancouver Island.",
+      "We cover the Comox Valley and much of central Vancouver Island, where trained candidates are in short supply.",
+      "Our office is in Burnaby and our crews work right across Metro Vancouver depending on the project.",
+      "We work in Penticton and the South Okanagan, from Summerland down to Osoyoos.",
+      "We're based in Terrace and serve northwest BC, including Kitimat, Prince Rupert and nearby communities.",
+      "We operate throughout the Tri-Cities — Coquitlam, Port Coquitlam and Port Moody — and the surrounding Metro Vancouver area.",
+      "Our business is in Vernon and we cover the North Okanagan and Shuswap, from Armstrong to Salmon Arm.",
+      "We're based in Maple Ridge and work across the eastern Lower Mainland and into the Fraser Valley.",
+      "We serve the Cowichan Valley and south Vancouver Island, with our main shop in Duncan.",
+      "We operate in Mission and the central Fraser Valley, and we regularly take on work in Abbotsford and Chilliwack.",
+      "Our crews work across the Sea-to-Sky corridor, from West Vancouver up through Squamish, Whistler and Pemberton.",
+      "We're based in Williams Lake and serve the Cariboo, where finding people with the right training is an ongoing challenge."
+    ]
+  },
 
   "roleDemand": {
     "question": "Which roles could graduates of this program fill, and how many of each? (Official Q2: Do you currently have vacant positions that successful graduates of this training would be qualified to fill? Please list the names of the position(s) and how many openings.)",
@@ -142,28 +180,28 @@
       "industry associations and networks"
     ],
     "templates": [
-      "We regularly post our openings on {sources}.",
       "We advertise these positions through {sources}.",
-      "Our openings typically go out on {sources}.",
       "We recruit for these roles mainly through {sources}.",
-      "We post positions on {sources}, and we often find qualified candidates are hard to come by.",
       "Our hiring for these roles runs through {sources}.",
       "We use {sources} to get our openings in front of candidates.",
-      "Openings like these are posted on {sources}.",
       "We rely on {sources} to fill these positions.",
-      "We share our openings across {sources}.",
-      "We advertise on {sources}, though the right candidates can still be slow to come forward.",
-      "We generally post on {sources} when these roles open up.",
+      "We advertise through {sources}, though the right candidates can still be slow to come forward.",
       "Our usual channels for these positions are {sources}.",
-      "We put these openings out through {sources}.",
       "We recruit through {sources}, and we've found strong local candidates in short supply.",
-      "When we're hiring for these roles we post on {sources}.",
       "We cast a wide net using {sources}.",
-      "We list these positions on {sources}.",
       "We promote our openings via {sources}.",
       "We handle recruitment for these roles through {sources}.",
-      "We post on {sources}, and often re-run the same ads when qualified applicants don't come through.",
-      "Our openings reach candidates through {sources}."
+      "Our openings reach candidates through {sources}.",
+      "We fill these roles mainly via {sources}.",
+      "When we're hiring for these roles, we turn to {sources}.",
+      "We find candidates for these positions through {sources}.",
+      "Our recruiting for these roles relies on {sources}.",
+      "We get the word out about these openings through {sources}.",
+      "We typically source candidates for these roles via {sources}.",
+      "We draw on {sources} when we need to fill these positions.",
+      "We reach candidates for these roles through {sources}, and it's still often a slow process.",
+      "The main ways we recruit for these roles are {sources}.",
+      "We look for candidates through {sources}."
     ]
   },
 
