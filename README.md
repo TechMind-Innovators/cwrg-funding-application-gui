@@ -60,7 +60,7 @@ starting with `_` are documentation and are ignored by the build.
    ```
    https://<your-user>.github.io/<repo>/<collegeSlug>/<programSlug>/
    ```
-   e.g. `https://techmind.github.io/cwrg-forms/vcc/computer-aided-design-technology/`
+   e.g. `https://techmind.github.io/cwrg-forms/sprott-shaw/computer-aided-design-technology/`
 
 A `.nojekyll` file is written into `docs/` automatically so GitHub serves the folders
 as-is.
@@ -104,5 +104,5 @@ framing, which it doesn't.)
 ```bash
 node build.js
 cd docs && python3 -m http.server 8000
-# then open http://localhost:8000/vcc/computer-aided-design-technology/
+# then open http://localhost:8000/sprott-shaw/computer-aided-design-technology/
 ```
