@@ -371,15 +371,15 @@
   var cSec = document.createElement("div"); cSec.className = "section";
   cSec.innerHTML = '<div class="section-head"><h3>Your business &amp; contact details</h3></div>' +
     '<div class="section-body">' +
-      field2("businessName", "Business name", "organization", "e.g. Ozz Electric Ltd.") +
+      field2("businessName", "Business name", "organization", "e.g. Your Company Ltd.") +
       '<div class="field" data-contact="1" data-min="5"><label class="q" for="businessAddress">Business address and/or website <span class="req">*</span></label>' +
         '<div class="hint">Both your full address and website is best, but a website on its own is fine too.</div>' +
-        '<input type="text" id="businessAddress" placeholder="e.g. 101 – 1680 Broadway St, Port Coquitlam, BC · www.example.com"><div class="feedback"></div></div>' +
+        '<input type="text" id="businessAddress" placeholder="e.g. 123 Main St, Your City, BC · www.yourcompany.com"><div class="feedback"></div></div>' +
       '<div class="row2">' +
         '<div class="field" data-contact="1" data-kind="email"><label class="q" for="repEmail">Representative email <span class="req">*</span></label>' +
           '<div class="hint">Where the charity can reach you if they have a question.</div>' +
           '<input type="email" id="repEmail" autocomplete="email" placeholder="name@company.com"><div class="feedback"></div></div>' +
-        field2opt("repName", "Representative name & title", "name", "e.g. Cara Ramage – HR Manager") +
+        field2opt("repName", "Representative name & title", "name", "e.g. Jane Smith – HR Manager") +
       '</div>' +
       '<div class="row2">' +
         '<div class="field" data-contact="1" data-optional="1" data-kind="tel"><label class="q" for="repPhone">Representative phone <span class="opt">(optional)</span></label><input type="tel" id="repPhone" autocomplete="tel" placeholder="604-555-1234"><div class="feedback"></div></div>' +
